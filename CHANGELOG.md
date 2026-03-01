@@ -1,3 +1,20 @@
+## [2.7.5](https://github.com/zeshuaro/appainter/compare/v2.7.4...v2.7.5) (2026-03-01)
+
+### Bug Fixes
+
+* **deps:** update dependency device_preview_plus to v2.6.1 ([#1791](https://github.com/zeshuaro/appainter/issues/1791)) ([15092c8](https://github.com/zeshuaro/appainter/commit/15092c821f881c793426d46eb9f779101381595b))
+
+### Miscellaneous Chores
+
+* **deps:** lock file maintenance ([#1792](https://github.com/zeshuaro/appainter/issues/1792)) ([8cdf4f4](https://github.com/zeshuaro/appainter/commit/8cdf4f4507b8d3f7dd01c252c38217a8299dd79b))
+* **deps:** update dependency semantic-release-pub to v0.11.10 ([#1794](https://github.com/zeshuaro/appainter/issues/1794)) ([e98bb59](https://github.com/zeshuaro/appainter/commit/e98bb5959f2927bdc911eb74f8e61ca4775355d7))
+* **node:** update node.js to v24.13.1 ([#1789](https://github.com/zeshuaro/appainter/issues/1789)) ([8ece9ea](https://github.com/zeshuaro/appainter/commit/8ece9ea89c9adc4a24b3bb72ca26051afa2af199))
+* **node:** update node.js to v24.14.0 ([#1795](https://github.com/zeshuaro/appainter/issues/1795)) ([e5d7ecb](https://github.com/zeshuaro/appainter/commit/e5d7ecb8b21f10e08d9a6ebd30ae206fdc534c7e))
+
+### Continuous Integration
+
+* **deps:** update zeshuaro/github-actions-workflows digest to cf7995e ([#1793](https://github.com/zeshuaro/appainter/issues/1793)) ([dea9411](https://github.com/zeshuaro/appainter/commit/dea9411c1fabc3a975d4449edc814756cdddd341))
+
 ## [2.7.4](https://github.com/zeshuaro/appainter/compare/v2.7.3...v2.7.4) (2026-02-15)
 
 ### Bug Fixes

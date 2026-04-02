@@ -125,9 +125,6 @@ void main() {
     for (var isDark in [true, false]) {
       blocTest<AdvancedThemeCubit, AdvancedThemeState>(
         'should emit theme brightness with isDark=$isDark',
-        setUp: () {
-          theme = _getDefaultTheme(isDark: isDark);
-        },
         build: () => advancedThemeCubit,
         act: (cubit) => cubit.themeBrightnessChanged(isDark),
         expect: () => [AdvancedThemeState(isDark: isDark)],

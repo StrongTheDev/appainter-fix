@@ -20,8 +20,9 @@ class BasicThemeCubit extends Cubit<BasicThemeState> {
   void themeBrightnessChanged(bool isDark) {
     emit(
       state.copyWith(
-        seedColor: BasicThemeState.defaultSeedColor,
-        colorScheme: BasicThemeState.getColorScheme(isDark),
+        colorScheme: state.colorScheme.copyWith(
+          brightness: isDark ? Brightness.dark : Brightness.light,
+        ),
         isDark: isDark,
       ),
     );

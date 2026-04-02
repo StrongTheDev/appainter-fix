@@ -58,8 +58,7 @@ class AdvancedThemeCubit extends Cubit<AdvancedThemeState> {
   }) : super(const AdvancedThemeState());
 
   void themeBrightnessChanged(bool isDark) {
-    colorThemeCubit.themeChanged(_getDefaultTheme(isDark: isDark));
-    textThemeCubit.themeBrightnessChanged(isDark);
+    colorThemeCubit.themeBrightnessChanged(isDark);
     emit(state.copyWith(isDark: isDark));
   }
 
@@ -82,6 +81,12 @@ class AdvancedThemeCubit extends Cubit<AdvancedThemeState> {
     radioThemeCubit.themeChanged(theme.radioTheme);
     sliderThemeCubit.themeChanged(theme.sliderTheme);
     textThemeCubit.themeChanged(theme.textTheme);
+    emit(
+      state.copyWith(
+        isDark: theme.brightness == Brightness.dark,
+        useMaterial3: theme.useMaterial3,
+      ),
+    );
   }
 
   void themeRandomized([int? seed]) {

@@ -36,6 +36,16 @@ class ColorThemeCubit extends Cubit<ColorThemeState> {
     );
   }
 
+  void themeBrightnessChanged(bool isDark) {
+    emit(
+      state.copyWith(
+        colorScheme: state.colorScheme.copyWith(
+          brightness: isDark ? Brightness.dark : Brightness.light,
+        ),
+      ),
+    );
+  }
+
   void primaryColorChanged(Color color, bool isDark) {
     final swatch = UtilService.getColorSwatch(color);
     final primaryColorDark = swatch[700]!;

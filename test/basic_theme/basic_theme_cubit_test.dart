@@ -39,14 +39,17 @@ void main() {
         'emit theme with isDark=$isDark',
         build: () => cubit,
         act: (cubit) => cubit.themeBrightnessChanged(isDark),
-        expect: () => [
-          BasicThemeState(
-            colorScheme: BasicThemeState()
-                .colorScheme
-                .copyWith(brightness: isDark ? Brightness.dark : Brightness.light),
-            isDark: isDark,
-          ),
-        ],
+        expect: () {
+          final colorScheme = BasicThemeState().colorScheme.copyWith(
+            brightness: isDark ? Brightness.dark : Brightness.light,
+          );
+          return [
+            BasicThemeState(
+              colorScheme: colorScheme,
+              isDark: isDark,
+            ),
+          ];
+        },
       );
     }
   });

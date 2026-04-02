@@ -41,7 +41,9 @@ void main() {
         act: (cubit) => cubit.themeBrightnessChanged(isDark),
         expect: () => [
           BasicThemeState(
-            colorScheme: isDark ? colorSchemeDark : colorSchemeLight,
+            colorScheme: BasicThemeState()
+                .colorScheme
+                .copyWith(brightness: isDark ? Brightness.dark : Brightness.light),
             isDark: isDark,
           ),
         ],

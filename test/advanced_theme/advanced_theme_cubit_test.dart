@@ -132,8 +132,8 @@ void main() {
         act: (cubit) => cubit.themeBrightnessChanged(isDark),
         expect: () => [AdvancedThemeState(isDark: isDark)],
         verify: (cubit) {
-          verify(() => colorThemeCubit.themeChanged(theme)).called(1);
-          verify(() => textThemeCubit.themeBrightnessChanged(isDark));
+          verify(() => colorThemeCubit.themeBrightnessChanged(isDark)).called(1);
+          verifyNever(() => textThemeCubit.themeBrightnessChanged(any()));
         },
       );
     }

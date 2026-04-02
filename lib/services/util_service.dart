@@ -1,55 +1,32 @@
-import 'package:appainter/common/consts.dart';
-import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart' as url_launcher;
+import 'package:flutter/services.dart';
 
 class UtilService {
-  static Map<int, Color> getColorSwatch(Color color) {
-    final swatch = <int, Color>{};
-    final strengths = <double>[.05];
-    final r = color.r, g = color.g, b = color.b;
-
-    for (int i = 1; i < 10; i++) {
-      strengths.add(0.1 * i);
-    }
-
-    for (var strength in strengths) {
-      final double ds = 0.5 - strength;
-      swatch[(strength * 1000).round()] = Color.fromRGBO(
-        (r + ((ds < 0 ? r : (255 - r)) * ds)).round(),
-        (g + ((ds < 0 ? g : (255 - g)) * ds)).round(),
-        (b + ((ds < 0 ? b : (255 - b)) * ds)).round(),
-        1,
-      );
-    }
-
-    return swatch;
+  static MaterialColor getColorSwatch(Color color) {
+    return MaterialColor(color.toARGB32(), <int, Color>{
+      50: _tint(color, 0.9),
+      100: _tint(color, 0.8),
+      200: _tint(color, 0.6),
+      300: _tint(color, 0.4),
+      400: _tint(color, 0.2),
+      500: color,
+      600: _shade(color, 0.1),
+      700: _shade(color, 0.2),
+      800: _shade(color, 0.3),
+      900: _shade(color, 0.4),
+    });
   }
 
-  static String enumToString(dynamic value) {
-    return value == null ? kNone : EnumToString.convertToString(value);
+  static Color _tint(Color color, double factor) {
+    return Color.lerp(color, Colors.white, factor) ?? color;
   }
 
-  static T? stringToEnum<T>(List<T> enumValues, String? value) {
-    return value != null ? EnumToString.fromString<T>(enumValues, value) : null;
+  static Color _shade(Color color, double factor) {
+    return Color.lerp(color, Colors.black, factor) ?? color;
   }
 
-  static List<String> getEnumStrings(
-    List<dynamic> values, {
-    bool withNull = false,
-  }) {
-    final strings = values.map((value) => enumToString(value)).toList();
-    if (withNull) {
-      strings.insert(0, kNone);
-    }
-
-    return strings;
-  }
-
-  static Future<void> launchUrl(String url) async {
-    final parsedUrl = Uri.parse(url);
-    await url_launcher.canLaunchUrl(parsedUrl)
-        ? await url_launcher.launchUrl(parsedUrl)
-        : throw 'Could not launch $url';
+  static Future<void> launchUrl(String href) async {
+    await Clipboard.setData(ClipboardData(text: href));
+    debugPrint('Copied URL to clipboard: $href');
   }
 }

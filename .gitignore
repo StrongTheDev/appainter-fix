@@ -457,3 +457,5 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/dart,macos,android,flutter,firebase,androidstudio,visualstudiocode,node
 
 *.g.dart
+testo/
+lib - old/

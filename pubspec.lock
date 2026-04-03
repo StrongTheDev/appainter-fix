@@ -50,7 +50,7 @@ packages:
     source: hosted
     version: "1.1.2"
   collection:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: collection
       sha256: "2f5709ae4d3d59dd8f7cd309b4e023046b57d8a6c82130785d2b0e5868084e76"
@@ -81,14 +81,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
-  cupertino_icons:
-    dependency: "direct main"
-    description:
-      name: cupertino_icons
-      sha256: ba631d1c7f7bef6b729a622b7b752645a2d076dba9976925b8f25725a30e1ee6
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.8"
   dbus:
     dependency: transitive
     description:
@@ -113,30 +105,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.1"
-  dropdown_search:
-    dependency: "direct main"
-    description:
-      name: dropdown_search
-      sha256: c29b3e5147a82a06a4a08b3b574c51cb48cc17ad89893d53ee72a6f86643622e
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.0.2"
-  enum_to_string:
-    dependency: "direct main"
-    description:
-      name: enum_to_string
-      sha256: "93b75963d3b0c9f6a90c095b3af153e1feccb79f6f08282d3274ff8d9eea52bc"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.1"
-  expandable:
-    dependency: "direct main"
-    description:
-      name: expandable
-      sha256: "9604d612d4d1146dafa96c6d8eec9c2ff0994658d6d09fed720ab788c7f5afc2"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.0.1"
   fake_async:
     dependency: transitive
     description:
@@ -190,11 +158,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_driver:
-    dependency: transitive
-    description: flutter
-    source: sdk
-    version: "0.0.0"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -242,11 +205,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0"
-  fuchsia_remote_debug_protocol:
-    dependency: transitive
-    description: flutter
-    source: sdk
-    version: "0.0.0"
   google_fonts:
     dependency: "direct main"
     description:
@@ -287,13 +245,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
-  integration_test:
-    dependency: "direct dev"
-    description: flutter
-    source: sdk
-    version: "0.0.0"
   intl:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: intl
       sha256: "3df61194eb431efc39c4ceba583b95633a403f46c9fd341e550ce0bfa50e9aa5"
@@ -380,6 +333,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.0"
+  lucide_flutter:
+    dependency: "direct main"
+    description:
+      name: lucide_flutter
+      sha256: "59cbd63bc0db9fc0cf60d411f0b0e36b1fdc86e2be48422ef91d2dc3c551e770"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.7.0"
   markdown:
     dependency: transitive
     description:
@@ -404,14 +365,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.11.1"
-  material_design_icons_flutter:
-    dependency: "direct main"
-    description:
-      name: material_design_icons_flutter
-      sha256: "6f986b7a51f3ad4c00e33c5c84e8de1bdd140489bbcdc8b66fc1283dad4dea5a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.0.7296"
   meta:
     dependency: transitive
     description:
@@ -428,14 +381,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
-  ndialog:
-    dependency: "direct main"
-    description:
-      name: ndialog
-      sha256: "6d74b247b0d5d34d57df4489c5ef6fc4e508f03a786068998e6cad3980a154a1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.5.0+1"
   nested:
     dependency: transitive
     description:
@@ -453,7 +398,7 @@ packages:
     source: hosted
     version: "1.9.1"
   path_provider:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: path_provider
       sha256: "50c5dd5b6e1aaf6fb3a78b33f6aa3afca52bf903a8a5298f53101fdaee55bbcd"
@@ -485,7 +430,7 @@ packages:
     source: hosted
     version: "2.2.1"
   path_provider_platform_interface:
-    dependency: "direct dev"
+    dependency: transitive
     description:
       name: path_provider_platform_interface
       sha256: "88f5779f72ba699763fa3a3b06aa4bf6de76c8e5de842cf6f29e2e06476c2334"
@@ -532,14 +477,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-  process:
-    dependency: transitive
-    description:
-      name: process
-      sha256: c6248e4526673988586e8c00bb22a49210c258dc91df5227d5da9748ecf79744
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.0.5"
   provider:
     dependency: "direct main"
     description:
@@ -564,14 +501,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.4"
-  remove_from_coverage:
-    dependency: "direct dev"
-    description:
-      name: remove_from_coverage
-      sha256: "5b5745f6b692c80e3d7903fb83f9e789dc4575e6db5443a1b391ca25c10bad06"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
   rfc_6901:
     dependency: transitive
     description:
@@ -713,14 +642,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
-  sync_http:
-    dependency: transitive
-    description:
-      name: sync_http
-      sha256: "7f0cd72eca000d2e026bcd6f990b81d0ca06022ef4e32fb257b30d3d1014a961"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.1"
   term_glyph:
     dependency: transitive
     description:
@@ -793,14 +714,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
-  webdriver:
-    dependency: transitive
-    description:
-      name: webdriver
-      sha256: "2f3a14ca026957870cfd9c635b83507e0e51d8091568e90129fbf805aba7cade"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.0"
   win32:
     dependency: transitive
     description:

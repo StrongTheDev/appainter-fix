@@ -50,8 +50,7 @@ class _EditorPageState extends State<EditorPage>
     }
 
     return Scaffold(
-      backgroundColor:
-          Theme.of(context).brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const EditorToolbar(),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -73,10 +72,12 @@ class _EditorPageState extends State<EditorPage>
                       ),
                       const Spacer(),
                       IconButton(
+                        key: const Key('toolbar_randomize_theme'),
                         onPressed: () => context.read<AppProvider>().randomizeTheme(),
-                        icon: const Icon(Icons.shuffle),
+                        icon: const Icon(Icons.shuffle_rounded),
                       ),
                       IconButton(
+                        key: const Key('toolbar_reset_theme'),
                         onPressed: () => context.read<AppProvider>().resetTheme(),
                         icon: const Icon(Icons.restore),
                       ),
@@ -124,14 +125,22 @@ class _ConfigBar extends StatelessWidget {
               children: [
                 const Text('Material 3'),
                 Switch(
-                  value: app.theme.useMaterial3,
+                  key: const Key('material3_switch'),
+                  value: app.useMaterial3,
                   onChanged: context.read<AppProvider>().setUseMaterial3,
                 ),
                 const SizedBox(width: 16),
-                const Text('Brightness'),
+                Text(
+                  app.isDark ? 'Preview: Dark' : 'Preview: Light',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(width: 16),
+                const Text('Separate shell'),
                 Switch(
-                  value: app.isDark,
-                  onChanged: context.read<AppProvider>().setBrightness,
+                  key: const Key('keep_editor_brightness_separate_switch'),
+                  value: app.keepEditorBrightnessSeparate,
+                  onChanged:
+                      context.read<AppProvider>().setKeepEditorBrightnessSeparate,
                 ),
               ],
             ),

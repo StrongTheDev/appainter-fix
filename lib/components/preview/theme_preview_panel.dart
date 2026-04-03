@@ -1,3 +1,4 @@
+import 'package:appainter/components/shared/font_family_dropdown.dart';
 import 'package:appainter/providers/app_provider.dart';
 import 'package:device_preview_plus/device_preview_plus.dart';
 import 'package:flutter/material.dart';
@@ -8,20 +9,108 @@ class ThemePreviewPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = context.watch<AppProvider>().theme;
+    final app = context.watch<AppProvider>();
+    final theme = app.previewTheme;
 
     return Card(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: DevicePreview(
-          builder: (context) {
-            return MaterialApp(
-              debugShowCheckedModeBanner: false,
-              theme: theme,
-              locale: DevicePreview.locale(context),
-              home: const _PreviewScaffold(),
-            );
-          },
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            _PreviewToolbar(app: app),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: DevicePreview(
+                  enabled: true,
+                  builder: (context) {
+                    return MaterialApp(
+                      debugShowCheckedModeBanner: false,
+                      themeAnimationDuration: Duration.zero,
+                      theme: theme,
+                      locale: DevicePreview.locale(context),
+                      home: const _PreviewScaffold(),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewToolbar extends StatelessWidget {
+  const _PreviewToolbar({required this.app});
+
+  final AppProvider app;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Preview Canvas',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                Text(app.isDark ? 'Dark Preview' : 'Light Preview'),
+                const SizedBox(width: 12),
+                Switch(
+                  key: const Key('preview_brightness_switch'),
+                  value: app.isDark,
+                  onChanged: app.setPreviewBrightness,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: SwitchListTile(
+                    key: const Key('preview_separate_shell_switch'),
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Keep editor brightness separate'),
+                    value: app.keepEditorBrightnessSeparate,
+                    onChanged: app.setKeepEditorBrightnessSeparate,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: FontFamilyDropdown(
+                    label: 'Display font',
+                    value: app.displayFontFamily,
+                    options: app.availableFontFamilies,
+                    dropdownKey: const Key('preview_display_font_dropdown'),
+                    onChanged: app.setDisplayFontFamily,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FontFamilyDropdown(
+                    label: 'Body font',
+                    value: app.bodyFontFamily,
+                    options: app.availableFontFamilies,
+                    dropdownKey: const Key('preview_body_font_dropdown'),
+                    onChanged: app.setBodyFontFamily,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -192,9 +281,16 @@ class _TextTab extends StatelessWidget {
         const SizedBox(height: 12),
         Text('Title Large', style: text.titleLarge),
         const SizedBox(height: 12),
+        Text('Label Large', style: text.labelLarge),
+        const SizedBox(height: 12),
         Text(
           'Body Medium: a quick preview paragraph showing the current text theme.',
           style: text.bodyMedium,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Caption-style label for metadata or helper copy.',
+          style: text.labelMedium,
         ),
       ],
     );

@@ -4,7 +4,7 @@ import 'package:appainter/services/util_service.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:provider/provider.dart';
 
 class EditorToolbar extends StatelessWidget implements PreferredSizeWidget {
@@ -19,35 +19,40 @@ class EditorToolbar extends StatelessWidget implements PreferredSizeWidget {
     final foreground = isDark ? Colors.white : Colors.grey;
 
     return AppBar(
-      backgroundColor: isDark ? Colors.black : Colors.white,
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       title: Row(
         children: [
-          const Icon(Icons.palette_outlined, size: 32),
+          Icon(LucideIcons.palette, size: 30, color: foreground),
           const SizedBox(width: 12),
           Text('Appainter', style: TextStyle(color: foreground)),
         ],
       ),
       actionsIconTheme: IconThemeData(color: foreground),
       actions: [
-        IconButton(
+        TextButton.icon(
+          key: const Key('toolbar_import_button'),
           onPressed: () => context.read<AppProvider>().importTheme(),
-          icon: Icon(MdiIcons.applicationImport, color: foreground),
+          icon: Icon(LucideIcons.download, color: foreground),
+          label: Text('Import', style: TextStyle(color: foreground)),
         ),
         TextButton.icon(
+          key: const Key('toolbar_export_button'),
           onPressed: () => context.read<AppProvider>().exportTheme(),
-          icon: Icon(MdiIcons.applicationExport, color: foreground),
+          icon: Icon(LucideIcons.upload, color: foreground),
           label: Text('Export', style: TextStyle(color: foreground)),
         ),
         IconButton(
+          key: const Key('toolbar_brightness_button'),
           icon: Icon(
-            _isDarkThemeMode(context) ? MdiIcons.weatherNight : MdiIcons.weatherSunny,
+            _isDarkThemeMode(context) ? LucideIcons.moonStar : LucideIcons.sun,
             color: foreground,
           ),
           onPressed: () =>
               context.read<AppProvider>().setThemeMode(!_isDarkThemeMode(context)),
         ),
         IconButton(
-          icon: Icon(MdiIcons.helpCircleOutline, color: foreground),
+          key: const Key('toolbar_help_button'),
+          icon: Icon(LucideIcons.circleHelp, color: foreground),
           onPressed: () => showDialog(
             context: context,
             builder: (_) => const _UsageDialog(),
@@ -58,11 +63,7 @@ class EditorToolbar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   bool _isDarkThemeMode(BuildContext context) {
-    final mode = context.read<AppProvider>().themeMode;
-    if (mode == ThemeMode.system) {
-      return MediaQuery.of(context).platformBrightness == Brightness.dark;
-    }
-    return mode == ThemeMode.dark;
+    return context.read<AppProvider>().isDark;
   }
 }
 

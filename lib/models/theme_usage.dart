@@ -6,26 +6,50 @@ class ThemeUsage {
   static const markdownUrl =
       'https://github.com/zeshuaro/appainter/blob/main/USAGE.md';
   static const defaultMarkdown = '''
-# Appainter
+# Using the exported theme JSON
 
-This lightweight rewrite focuses on editing and previewing a Material theme
-with a simpler provider-based architecture.
+The exported `.json` file is a serialized Flutter `ThemeData` definition.
+You can load it in another Flutter app with the `json_theme` package.
 
-## What you can do
+## 1. Add the package
 
-- switch between basic and advanced editing
-- preview the current theme in a live demo surface
-- toggle brightness and Material 3
-- randomize, reset, import, and export themes
+```yaml
+dependencies:
+  json_theme: ^9.0.3
+```
 
-## Why this rewrite
+## 2. Add or load the exported file
 
-The previous cubit-heavy structure made the app harder to follow and harder to
-contribute to. The current code keeps state in one controller and keeps UI
-under straightforward pages and components.
+You can bundle the JSON as an asset, download it, or read it from local
+storage. If you keep it as an asset, add it to `pubspec.yaml`.
 
-## Export
+## 3. Decode it into ThemeData
 
-Use the Export action in the toolbar to save the current theme as JSON.
+```dart
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
+import 'package:json_theme/json_theme.dart';
+
+final raw = await rootBundle.loadString('assets/appainter_theme.json');
+final data = jsonDecode(raw);
+final theme = ThemeDecoder.decodeThemeData(data)!;
+```
+
+## 4. Pass it to MaterialApp
+
+```dart
+MaterialApp(
+  theme: theme,
+  home: const MyHomePage(),
+);
+```
+
+## Notes
+
+- If your exported theme uses Google Fonts or any custom font family, the
+  consuming app must also make those fonts available.
+- You can keep separate JSON files for light and dark themes if your app needs
+  both.
 ''';
 }

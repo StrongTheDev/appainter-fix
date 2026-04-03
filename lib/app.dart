@@ -22,20 +22,13 @@ class _AppView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
-    final lightTheme = app.theme.copyWith(
-      brightness: Brightness.light,
-      colorScheme: app.colorScheme.copyWith(brightness: Brightness.light),
-    );
-    final darkTheme = app.theme.copyWith(
-      brightness: Brightness.dark,
-      colorScheme: app.colorScheme.copyWith(brightness: Brightness.dark),
-    );
 
     return MaterialApp(
       title: 'Appainter',
       debugShowCheckedModeBanner: false,
-      theme: lightTheme,
-      darkTheme: darkTheme,
+      themeAnimationDuration: Duration.zero,
+      theme: app.editorLightTheme,
+      darkTheme: app.editorDarkTheme,
       themeMode: app.themeMode,
       home: app.status == AppStatus.ready
           ? const EditorPage()

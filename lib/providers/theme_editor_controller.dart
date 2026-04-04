@@ -1,5 +1,5 @@
-import 'package:appainter/models/theme_usage.dart';
 import 'package:appainter/models/text_variant.dart';
+import 'package:appainter/models/theme_usage.dart';
 import 'package:appainter/repositories/home_repository.dart';
 import 'package:appainter/services/basic_theme_service.dart';
 import 'package:appainter/services/font_catalog_service.dart';
@@ -33,6 +33,7 @@ class ThemeEditorController extends ChangeNotifier {
   EditorMode _editorMode = EditorMode.basic;
   ThemeUsage? _themeUsage;
   Brightness _previewBrightness = Brightness.light;
+  Brightness _editorBrightness = Brightness.light;
   bool _keepEditorBrightnessSeparate = false;
   String? _displayFontFamily;
   String? _bodyFontFamily;
@@ -61,8 +62,9 @@ class ThemeEditorController extends ChangeNotifier {
       editorBrightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
   Brightness get previewBrightness => _previewBrightness;
   Brightness get editorBrightness =>
-      _keepEditorBrightnessSeparate ? Brightness.light : _previewBrightness;
+      _keepEditorBrightnessSeparate ? _editorBrightness : _previewBrightness;
   bool get isDark => _previewBrightness == Brightness.dark;
+  bool get isEditorDark => editorBrightness == Brightness.dark;
   bool get keepEditorBrightnessSeparate => _keepEditorBrightnessSeparate;
   bool get useMaterial3 => _previewThemeData.useMaterial3;
   ColorScheme get colorScheme => previewTheme.colorScheme;
@@ -99,15 +101,34 @@ class ThemeEditorController extends ChangeNotifier {
     }
   }
 
-  Future<void> setThemeMode(bool isDarkTheme) => setPreviewBrightness(isDarkTheme);
+  Future<void> setThemeMode(bool isDarkTheme) =>
+      setPreviewBrightness(isDarkTheme);
+  Future<void> setEditorThemeMode(bool isDarkTheme) =>
+      setEditorBrightness(isDarkTheme);
 
   Future<void> setPreviewBrightness(bool isDarkTheme) async {
     _previewBrightness = isDarkTheme ? Brightness.dark : Brightness.light;
-    await homeRepo.setIsDarkTheme(isDarkTheme);
+    await homeRepo.setPreviewDarkTheme(isDarkTheme);
     _previewThemeData = _previewThemeData.copyWith(
       brightness: _previewBrightness,
       colorScheme: _previewThemeData.colorScheme.copyWith(
         brightness: _previewBrightness,
+      ),
+    );
+    notifyListeners();
+  }
+
+  Future<void> setEditorBrightness(bool isDarkTheme) async {
+    if (!_keepEditorBrightnessSeparate) {
+      await setPreviewBrightness(isDarkTheme);
+      return;
+    }
+    _editorBrightness = isDarkTheme ? Brightness.dark : Brightness.light;
+    await homeRepo.setEditorDarkTheme(isDarkTheme);
+    _previewThemeData = _previewThemeData.copyWith(
+      brightness: _editorBrightness,
+      colorScheme: _previewThemeData.colorScheme.copyWith(
+        brightness: _editorBrightness,
       ),
     );
     notifyListeners();
@@ -211,8 +232,8 @@ class ThemeEditorController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void onPrimaryColorChanged(Color color) =>
-      _updateColorScheme(_previewThemeData.colorScheme.copyWith(onPrimary: color));
+  void onPrimaryColorChanged(Color color) => _updateColorScheme(
+      _previewThemeData.colorScheme.copyWith(onPrimary: color));
 
   void secondaryColorChanged(Color color) => _updateColorScheme(
         _previewThemeData.colorScheme.copyWith(
@@ -221,21 +242,21 @@ class ThemeEditorController extends ChangeNotifier {
         ),
       );
 
-  void surfaceColorChanged(Color color) =>
-      _updateColorScheme(_previewThemeData.colorScheme.copyWith(surface: color));
+  void surfaceColorChanged(Color color) => _updateColorScheme(
+      _previewThemeData.colorScheme.copyWith(surface: color));
 
   void errorColorChanged(Color color) =>
       _updateColorScheme(_previewThemeData.colorScheme.copyWith(error: color));
 
-  void outlineColorChanged(Color color) =>
-      _updateColorScheme(_previewThemeData.colorScheme.copyWith(outline: color));
+  void outlineColorChanged(Color color) => _updateColorScheme(
+      _previewThemeData.colorScheme.copyWith(outline: color));
 
   void inversePrimaryColorChanged(Color color) => _updateColorScheme(
         _previewThemeData.colorScheme.copyWith(inversePrimary: color),
       );
 
-  void onSurfaceColorChanged(Color color) =>
-      _updateColorScheme(_previewThemeData.colorScheme.copyWith(onSurface: color));
+  void onSurfaceColorChanged(Color color) => _updateColorScheme(
+      _previewThemeData.colorScheme.copyWith(onSurface: color));
 
   void surfaceContainerHighestColorChanged(Color color) => _updateColorScheme(
         _previewThemeData.colorScheme.copyWith(surfaceContainerHighest: color),
@@ -333,22 +354,22 @@ class ThemeEditorController extends ChangeNotifier {
 
   void fabBackgroundColorChanged(Color color) {
     _previewThemeData = _previewThemeData.copyWith(
-      floatingActionButtonTheme: _previewThemeData.floatingActionButtonTheme
-          .copyWith(
-            backgroundColor: color,
-            foregroundColor: _basicThemeService.getOnKeyColor(color),
-          ),
+      floatingActionButtonTheme:
+          _previewThemeData.floatingActionButtonTheme.copyWith(
+        backgroundColor: color,
+        foregroundColor: _basicThemeService.getOnKeyColor(color),
+      ),
     );
     notifyListeners();
   }
 
   void bottomNavigationColorChanged(Color color) {
     _previewThemeData = _previewThemeData.copyWith(
-      bottomNavigationBarTheme: _previewThemeData.bottomNavigationBarTheme
-          .copyWith(
-            selectedItemColor: color,
-            unselectedItemColor: color.withValues(alpha: 0.6),
-          ),
+      bottomNavigationBarTheme:
+          _previewThemeData.bottomNavigationBarTheme.copyWith(
+        selectedItemColor: color,
+        unselectedItemColor: color.withValues(alpha: 0.6),
+      ),
     );
     notifyListeners();
   }
@@ -425,12 +446,10 @@ class ThemeEditorController extends ChangeNotifier {
       primaryTextTheme: textTheme,
       appBarTheme: baseTheme.appBarTheme.copyWith(
         titleTextStyle: textTheme.titleLarge?.copyWith(
-          color: baseTheme.appBarTheme.foregroundColor ??
-              colorScheme.onSurface,
+          color: baseTheme.appBarTheme.foregroundColor ?? colorScheme.onSurface,
         ),
         toolbarTextStyle: textTheme.bodyMedium?.copyWith(
-          color: baseTheme.appBarTheme.foregroundColor ??
-              colorScheme.onSurface,
+          color: baseTheme.appBarTheme.foregroundColor ?? colorScheme.onSurface,
         ),
       ),
     );
@@ -452,8 +471,9 @@ class ThemeEditorController extends ChangeNotifier {
     );
 
     return baseTheme.copyWith(
-      scaffoldBackgroundColor:
-          brightness == Brightness.dark ? const Color(0xFF0F172A) : const Color(0xFFF4F7F9),
+      scaffoldBackgroundColor: brightness == Brightness.dark
+          ? const Color(0xFF0F172A)
+          : const Color(0xFFF4F7F9),
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -466,8 +486,9 @@ class ThemeEditorController extends ChangeNotifier {
       textTheme: textTheme,
       primaryTextTheme: textTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor:
-            brightness == Brightness.dark ? const Color(0xFF111827) : Colors.white,
+        backgroundColor: brightness == Brightness.dark
+            ? const Color(0xFF111827)
+            : Colors.white,
         foregroundColor: shellScheme.onSurface,
         elevation: 0,
         centerTitle: false,

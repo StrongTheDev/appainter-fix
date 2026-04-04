@@ -1,4 +1,5 @@
 // import 'package:appainter/basic_theme/basic_theme.dart';
+import 'package:appainter/components/editors/basic_theme_panel.dart';
 import 'package:appainter/main.dart' as app;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,7 +13,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(2400, 1080));
       await app.main();
 
-      final finder = find.byType(BasicThemeEditor);
+      final finder = find.byType(BasicThemePanel);
       final end = tester.binding.clock.now().add(const Duration(seconds: 10));
 
       do {

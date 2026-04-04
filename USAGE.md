@@ -16,19 +16,19 @@ To use the theme JSON file in your app, follow the steps below:
 
 1. Add `json_theme` as a dependency in your `pubspec.yaml` file.
 
-    ```yml
-    dependencies:
-      json_theme: ^9.0.3
+   ```yml
+   dependencies:
+     json_theme: ^9.0.3
+   ```
 
 2. Copy the generated `json` file to your app project and place it under the `assets/` folder.
-   
 3. Update your `pubspec.yaml` file to include your asset.
 
-    ```yml
-    flutter:
-      assets:
-        - assets/appainter_theme.json
-    ```
+   ```yml
+   flutter:
+     assets:
+       - assets/your_app_theme.json
+   ```
 
 4. Update your `main` function to be async, load your theme and pass it into your App
 
@@ -42,7 +42,7 @@ To use the theme JSON file in your app, follow the steps below:
    void main() async {
      WidgetsFlutterBinding.ensureInitialized();
 
-     final themeStr = await rootBundle.loadString('assets/appainter_theme.json');
+     final themeStr = await rootBundle.loadString('assets/your_app_theme.json');
      final themeJson = jsonDecode(themeStr);
      final theme = ThemeDecoder.decodeThemeData(themeJson)!;
 
@@ -67,20 +67,18 @@ To use the theme JSON file in your app, follow the steps below:
 If you've generated the `json` theme file with a custom font, you'll need to import a custom font file:
 
 1. Search and download your font from [Google Fonts](https://fonts.google.com/). Appainter uses Google Fonts as the list of font options so you should be able to find your font there.
-   
 2. Copy the font file to your app project and place it under the `fonts/` folder.
-   
 3. Update your `pubspec.yaml` file to include your font. Here we use `Montserrat` as our font.
 
-    ```yml
-    flutter:
-      assets:
-        - assets/appainter_theme.json
-      fonts:
-        - family: Montserrat
-          fonts:
-            - asset: fonts/Montserrat-Regular.ttf
-    ```
+   ```yml
+   flutter:
+     assets:
+       - assets/your_app_theme.json
+     fonts:
+       - family: Montserrat
+         fonts:
+           - asset: fonts/Montserrat-Regular.ttf
+   ```
 
 4. Your font will be loaded automatically when you use the generated theme.
 

@@ -1,3 +1,4 @@
+import 'package:appainter/components/editors/section_header.dart';
 import 'package:appainter/components/shared/color_picker_tile.dart';
 import 'package:appainter/components/shared/font_family_dropdown.dart';
 import 'package:appainter/providers/app_provider.dart';
@@ -17,7 +18,7 @@ class BasicThemePanel extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const _SectionHeader(
+          const SectionHeader(
             title: 'Quick Palette',
             subtitle:
                 'Make fast color decisions for the preview without recoloring the editor shell.',
@@ -30,7 +31,7 @@ class BasicThemePanel extends StatelessWidget {
             onColorChanged: app.seedColorChanged,
           ),
           const SizedBox(height: 20),
-          _SectionHeader(
+          SectionHeader(
             title: 'Primary Story',
             subtitle: 'Set the hero tones that drive your preview theme.',
           ),
@@ -53,7 +54,7 @@ class BasicThemePanel extends StatelessWidget {
             onColorChanged: app.secondaryColorChanged,
           ),
           const SizedBox(height: 20),
-          const _SectionHeader(
+          const SectionHeader(
             title: 'Surfaces',
             subtitle: 'Tune the foundations of cards, forms, and neutral backgrounds.',
           ),
@@ -82,7 +83,7 @@ class BasicThemePanel extends StatelessWidget {
             onColorChanged: app.inversePrimaryColorChanged,
           ),
           const SizedBox(height: 20),
-          const _SectionHeader(
+          const SectionHeader(
             title: 'Typography Roles',
             subtitle:
                 'Choose the main Google Fonts for display styles and for reading-heavy content.',
@@ -103,51 +104,6 @@ class BasicThemePanel extends StatelessWidget {
             onChanged: app.setBodyFontFamily,
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.subtitle});
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            scheme.primaryContainer.withValues(alpha: 0.95),
-            scheme.secondaryContainer.withValues(alpha: 0.85),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.2,
-                    color: scheme.onPrimaryContainer,
-                  ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: scheme.onPrimaryContainer.withValues(alpha: 0.8),
-                  ),
-            ),
-          ],
-        ),
       ),
     );
   }

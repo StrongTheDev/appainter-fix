@@ -31,7 +31,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:json_theme/json_theme.dart';
 
-final raw = await rootBundle.loadString('assets/appainter_theme.json');
+final raw = await rootBundle.loadString('assets/your_app_theme.json');
 final data = jsonDecode(raw);
 final theme = ThemeDecoder.decodeThemeData(data)!;
 ```

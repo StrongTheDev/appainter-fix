@@ -1,4 +1,3 @@
-import 'package:appainter/components/shared/font_family_dropdown.dart';
 import 'package:appainter/providers/app_provider.dart';
 import 'package:device_preview_plus/device_preview_plus.dart';
 import 'package:flutter/material.dart';
@@ -10,18 +9,20 @@ class ThemePreviewPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
-    final theme = app.previewTheme;
+    final theme = app.previewTheme.copyWith(
+      brightness: app.isDark ? Brightness.dark : Brightness.light,
+    );
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _PreviewToolbar(app: app),
-            const SizedBox(height: 16),
+            // PreviewSettingsToolbar(app: app),
+            // const SizedBox(height: 16),
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(16),
                 child: DevicePreview(
                   enabled: true,
                   builder: (context) {
@@ -35,80 +36,6 @@ class ThemePreviewPanel extends StatelessWidget {
                   },
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PreviewToolbar extends StatelessWidget {
-  const _PreviewToolbar({required this.app});
-
-  final AppProvider app;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Preview Canvas',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                ),
-                Text(app.isDark ? 'Dark Preview' : 'Light Preview'),
-                const SizedBox(width: 12),
-                Switch(
-                  key: const Key('preview_brightness_switch'),
-                  value: app.isDark,
-                  onChanged: app.setPreviewBrightness,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: SwitchListTile(
-                    key: const Key('preview_separate_shell_switch'),
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Keep editor brightness separate'),
-                    value: app.keepEditorBrightnessSeparate,
-                    onChanged: app.setKeepEditorBrightnessSeparate,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: FontFamilyDropdown(
-                    label: 'Display font',
-                    value: app.displayFontFamily,
-                    options: app.availableFontFamilies,
-                    dropdownKey: const Key('preview_display_font_dropdown'),
-                    onChanged: app.setDisplayFontFamily,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FontFamilyDropdown(
-                    label: 'Body font',
-                    value: app.bodyFontFamily,
-                    options: app.availableFontFamilies,
-                    dropdownKey: const Key('preview_body_font_dropdown'),
-                    onChanged: app.setBodyFontFamily,
-                  ),
-                ),
-              ],
             ),
           ],
         ),

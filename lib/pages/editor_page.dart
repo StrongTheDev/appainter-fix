@@ -1,5 +1,6 @@
 import 'package:appainter/components/editors/advanced_theme_panel.dart';
 import 'package:appainter/components/editors/basic_theme_panel.dart';
+import 'package:appainter/components/editors/section_header.dart';
 import 'package:appainter/components/preview/theme_preview_panel.dart';
 import 'package:appainter/components/toolbar/editor_toolbar.dart';
 import 'package:appainter/providers/app_provider.dart';
@@ -73,12 +74,14 @@ class _EditorPageState extends State<EditorPage>
                       const Spacer(),
                       IconButton(
                         key: const Key('toolbar_randomize_theme'),
-                        onPressed: () => context.read<AppProvider>().randomizeTheme(),
+                        onPressed: () =>
+                            context.read<AppProvider>().randomizeTheme(),
                         icon: const Icon(Icons.shuffle_rounded),
                       ),
                       IconButton(
                         key: const Key('toolbar_reset_theme'),
-                        onPressed: () => context.read<AppProvider>().resetTheme(),
+                        onPressed: () =>
+                            context.read<AppProvider>().resetTheme(),
                         icon: const Icon(Icons.restore),
                       ),
                     ],
@@ -117,33 +120,44 @@ class _ConfigBar extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
           children: [
-            Text('Theme configuration', style: Theme.of(context).textTheme.headlineSmall),
             Row(
               children: [
-                const Text('Material 3'),
-                Switch(
-                  key: const Key('material3_switch'),
-                  value: app.useMaterial3,
-                  onChanged: context.read<AppProvider>().setUseMaterial3,
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  app.isDark ? 'Preview: Dark' : 'Preview: Light',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(width: 16),
-                const Text('Separate shell'),
-                Switch(
-                  key: const Key('keep_editor_brightness_separate_switch'),
-                  value: app.keepEditorBrightnessSeparate,
-                  onChanged:
-                      context.read<AppProvider>().setKeepEditorBrightnessSeparate,
+                Expanded(
+                  child: SectionHeader(
+                    title: "Theme configuration",
+                    subtitle:
+                        "Configure the themes throughout the app and preview.",
+                  ),
                 ),
               ],
             ),
+            SwitchListTile(
+              key: const Key('material3_switch'),
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Use Material 3'),
+              value: app.useMaterial3,
+              onChanged: app.setUseMaterial3,
+            ),
+            SwitchListTile(
+              key: const Key('preview_brightness_switch'),
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                app.isDark
+                    ? 'Preview Brightness: Dark'
+                    : 'Preview Brightness: Light',
+              ),
+              value: app.isDark,
+              onChanged: app.setPreviewBrightness,
+            ),
+            // SwitchListTile(
+            //   key: const Key('preview_separate_shell_switch'),
+            //   contentPadding: EdgeInsets.zero,
+            //   title: const Text('Keep editor brightness separate'),
+            //   value: app.keepEditorBrightnessSeparate,
+            //   onChanged: app.setKeepEditorBrightnessSeparate,
+            // ),
           ],
         ),
       ),

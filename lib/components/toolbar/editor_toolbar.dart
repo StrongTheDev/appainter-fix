@@ -17,6 +17,7 @@ class EditorToolbar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final foreground = isDark ? Colors.white : Colors.grey;
+    AppProvider app = context.read<AppProvider>();
 
     return AppBar(
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -24,7 +25,7 @@ class EditorToolbar extends StatelessWidget implements PreferredSizeWidget {
         children: [
           Icon(LucideIcons.palette, size: 30, color: foreground),
           const SizedBox(width: 12),
-          Text('Appainter', style: TextStyle(color: foreground)),
+          Text('Appainter V', style: TextStyle(color: foreground)),
         ],
       ),
       actionsIconTheme: IconThemeData(color: foreground),
@@ -44,11 +45,10 @@ class EditorToolbar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           key: const Key('toolbar_brightness_button'),
           icon: Icon(
-            _isDarkThemeMode(context) ? LucideIcons.moonStar : LucideIcons.sun,
+            app.isEditorDark ? LucideIcons.moonStar : LucideIcons.sun,
             color: foreground,
           ),
-          onPressed: () =>
-              context.read<AppProvider>().setThemeMode(!_isDarkThemeMode(context)),
+          onPressed: () => app.setEditorThemeMode(!app.isEditorDark),
         ),
         IconButton(
           key: const Key('toolbar_help_button'),
@@ -62,9 +62,9 @@ class EditorToolbar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  bool _isDarkThemeMode(BuildContext context) {
-    return context.read<AppProvider>().isDark;
-  }
+  // bool _isDarkThemeMode(BuildContext context) {
+  //   return context.read<AppProvider>().isDark;
+  // }
 }
 
 class _UsageDialog extends StatelessWidget {
@@ -117,7 +117,8 @@ class _UsageContent extends StatelessWidget {
                 TextSpan(
                   text: 'this',
                   recognizer: TapGestureRecognizer()
-                    ..onTap = () => UtilService.launchUrl(ThemeUsage.markdownUrl),
+                    ..onTap =
+                        () => UtilService.launchUrl(ThemeUsage.markdownUrl),
                   style: const TextStyle(
                     color: Colors.blue,
                     decoration: TextDecoration.underline,

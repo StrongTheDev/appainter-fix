@@ -31,7 +31,7 @@ class FakeHomeRepository extends HomeRepository {
   Future<bool?> getIsDarkTheme() async => savedIsDark ?? initialDark;
 
   @override
-  Future<void> setIsDarkTheme(bool isDark) async {
+  Future<void> setPreviewDarkTheme(bool isDark) async {
     savedIsDark = isDark;
   }
 }

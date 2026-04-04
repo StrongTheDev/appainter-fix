@@ -17,6 +17,8 @@
 
 A material theme editor and generator for Flutter to configure and preview the overall visual theme of your material app.
 
+Fork of [zeshuaro/appainter](https://github.com/zeshuaro/appainter)
+
 ![Appainter Screenshot](images/screenshot.png)
 
 ## Usage

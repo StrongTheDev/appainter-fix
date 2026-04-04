@@ -17,8 +17,9 @@ class HomeRepository {
 
   final FilePicker _filePicker;
 
-  static const _exportFileName = 'appainter_theme.json';
-  static const _isDarkThemeKey = 'isDarkTheme';
+  static const _exportFileName = 'your_app_theme.json';
+  static const _isPreviewDarkThemeKey = 'isPreviewDarkTheme';
+  static const _isEditorDarkThemeKey = 'isEditorDarkTheme';
 
   Future<ThemeUsage> fetchThemeUsage() async {
     return const ThemeUsage(ThemeUsage.defaultMarkdown);
@@ -72,11 +73,16 @@ class HomeRepository {
 
   Future<bool?> getIsDarkTheme() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_isDarkThemeKey);
+    return prefs.getBool(_isPreviewDarkThemeKey);
   }
 
-  Future<void> setIsDarkTheme(bool isDark) async {
+  Future<void> setPreviewDarkTheme(bool isDark) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_isDarkThemeKey, isDark);
+    await prefs.setBool(_isPreviewDarkThemeKey, isDark);
+  }
+
+  Future<void> setEditorDarkTheme(bool isDark) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isEditorDarkThemeKey, isDark);
   }
 }

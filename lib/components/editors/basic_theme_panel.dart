@@ -25,7 +25,8 @@ class BasicThemePanel extends StatelessWidget {
           ),
           ColorPickerTile(
             label: 'Seed color',
-            description: 'Regenerates the preview palette from a single starting hue.',
+            description:
+                'Regenerates the preview palette from a single starting hue.',
             color: scheme.primary,
             colorKey: const Key('basic_seed_color_picker'),
             onColorChanged: app.seedColorChanged,
@@ -56,7 +57,8 @@ class BasicThemePanel extends StatelessWidget {
           const SizedBox(height: 20),
           const SectionHeader(
             title: 'Surfaces',
-            subtitle: 'Tune the foundations of cards, forms, and neutral backgrounds.',
+            subtitle:
+                'Tune the foundations of cards, forms, and neutral backgrounds.',
           ),
           ColorPickerTile(
             label: 'Surface',
@@ -88,6 +90,7 @@ class BasicThemePanel extends StatelessWidget {
             subtitle:
                 'Choose the main Google Fonts for display styles and for reading-heavy content.',
           ),
+          const SizedBox(height: 12),
           FontFamilyDropdown(
             label: 'Display, headings & titles',
             value: app.displayFontFamily,

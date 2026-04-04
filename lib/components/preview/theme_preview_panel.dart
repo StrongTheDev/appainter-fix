@@ -22,10 +22,12 @@ class ThemePreviewPanel extends StatelessWidget {
                   enabled: true,
                   builder: (context) {
                     return MaterialApp(
-                      key: ValueKey(app.isDark),
+                      key: ValueKey(
+                        '${app.previewBrightness.name}-${app.previewTheme.colorScheme.primary.toARGB32()}-${app.displayFontFamily}-${app.bodyFontFamily}',
+                      ),
                       debugShowCheckedModeBanner: false,
                       themeAnimationDuration: Durations.short2,
-                      theme: app.previewThemeData,
+                      theme: app.previewTheme,
                       locale: DevicePreview.locale(context),
                       home: const _PreviewScaffold(),
                     );

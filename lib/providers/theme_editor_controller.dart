@@ -34,7 +34,7 @@ class ThemeEditorController extends ChangeNotifier {
   ThemeUsage? _themeUsage;
   Brightness _previewBrightness = Brightness.light;
   Brightness _editorBrightness = Brightness.light;
-  bool _keepEditorBrightnessSeparate = false;
+  bool _keepEditorBrightnessSeparate = true;
   String? _displayFontFamily;
   String? _bodyFontFamily;
   final Map<TextVariant, String?> _textVariantFonts = {};
@@ -77,6 +77,7 @@ class ThemeEditorController extends ChangeNotifier {
     await Future.wait([
       fetchThemeUsage(),
       _fetchPreviewBrightness(),
+      _fetchEditorBrightness(),
     ]);
     _status = AppStatus.ready;
     notifyListeners();
@@ -88,7 +89,7 @@ class ThemeEditorController extends ChangeNotifier {
   }
 
   Future<void> _fetchPreviewBrightness() async {
-    final saved = await homeRepo.getIsDarkTheme();
+    final saved = await homeRepo.getPreviewDarkTheme();
     if (saved != null) {
       _previewBrightness = saved ? Brightness.dark : Brightness.light;
       _previewThemeData = _previewThemeData.copyWith(
@@ -97,6 +98,14 @@ class ThemeEditorController extends ChangeNotifier {
           brightness: _previewBrightness,
         ),
       );
+      notifyListeners();
+    }
+  }
+
+  Future<void> _fetchEditorBrightness() async {
+    final saved = await homeRepo.getEditorDarkTheme();
+    if (saved != null) {
+      _editorBrightness = saved ? Brightness.dark : Brightness.light;
       notifyListeners();
     }
   }
@@ -125,12 +134,6 @@ class ThemeEditorController extends ChangeNotifier {
     }
     _editorBrightness = isDarkTheme ? Brightness.dark : Brightness.light;
     await homeRepo.setEditorDarkTheme(isDarkTheme);
-    _previewThemeData = _previewThemeData.copyWith(
-      brightness: _editorBrightness,
-      colorScheme: _previewThemeData.colorScheme.copyWith(
-        brightness: _editorBrightness,
-      ),
-    );
     notifyListeners();
   }
 

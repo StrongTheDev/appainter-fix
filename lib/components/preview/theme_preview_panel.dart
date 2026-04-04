@@ -9,17 +9,12 @@ class ThemePreviewPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
-    final theme = app.previewTheme.copyWith(
-      brightness: app.isDark ? Brightness.dark : Brightness.light,
-    );
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // PreviewSettingsToolbar(app: app),
-            // const SizedBox(height: 16),
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
@@ -27,9 +22,10 @@ class ThemePreviewPanel extends StatelessWidget {
                   enabled: true,
                   builder: (context) {
                     return MaterialApp(
+                      key: ValueKey(app.isDark),
                       debugShowCheckedModeBanner: false,
-                      themeAnimationDuration: Duration.zero,
-                      theme: theme,
+                      themeAnimationDuration: Durations.short2,
+                      theme: app.previewThemeData,
                       locale: DevicePreview.locale(context),
                       home: const _PreviewScaffold(),
                     );

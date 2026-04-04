@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:appainter/models/theme_usage.dart';
 import 'package:file_picker/file_picker.dart';
@@ -71,9 +70,14 @@ class HomeRepository {
     return true;
   }
 
-  Future<bool?> getIsDarkTheme() async {
+  Future<bool?> getPreviewDarkTheme() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_isPreviewDarkThemeKey);
+  }
+
+  Future<bool?> getEditorDarkTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_isEditorDarkThemeKey);
   }
 
   Future<void> setPreviewDarkTheme(bool isDark) async {

@@ -66,8 +66,16 @@ class _EditorPageState extends State<EditorPage>
                         child: TabBar(
                           controller: _controller,
                           tabs: const [
-                            Tab(text: 'Basic'),
-                            Tab(text: 'Advanced'),
+                            Tab(
+                              child: SizedBox.expand(
+                                child: Center(child: Text('Basic')),
+                              ),
+                            ),
+                            Tab(
+                              child: SizedBox.expand(
+                                child: Center(child: Text('Advanced')),
+                              ),
+                            ),
                           ],
                         ),
                       ),

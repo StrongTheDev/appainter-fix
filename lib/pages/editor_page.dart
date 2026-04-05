@@ -1,10 +1,10 @@
 import 'package:appainter/components/editors/advanced_theme_panel.dart';
 import 'package:appainter/components/editors/basic_theme_panel.dart';
-import 'package:appainter/components/editors/section_header.dart';
 import 'package:appainter/components/preview/theme_preview_panel.dart';
 import 'package:appainter/components/toolbar/editor_toolbar.dart';
 import 'package:appainter/providers/app_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:provider/provider.dart';
 
 class EditorPage extends StatefulWidget {
@@ -80,6 +80,25 @@ class _EditorPageState extends State<EditorPage>
                         ),
                       ),
                       const Spacer(),
+                      Tooltip(
+                        message: "Use Material ${app.useMaterial3 ? "2" : "3"}",
+                        child: IconSwitch(
+                          value: app.useMaterial3,
+                          onChanged: app.setUseMaterial3,
+                          valueTrueIcon: IconData(51, fontFamily: "monospace"),
+                          valueFalseIcon: IconData(50),
+                        ),
+                      ),
+                      Tooltip(
+                        message:
+                            "Set Preview Brightnes to ${app.isDark ? "Light" : "Dark"}",
+                        child: IconSwitch(
+                          value: app.isDark,
+                          onChanged: app.setPreviewBrightness,
+                          valueTrueIcon: LucideIcons.moonStar,
+                          valueFalseIcon: LucideIcons.sun,
+                        ),
+                      ),
                       IconButton(
                         key: const Key('toolbar_randomize_theme'),
                         onPressed: () =>
@@ -94,8 +113,6 @@ class _EditorPageState extends State<EditorPage>
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  _ConfigBar(app: app),
                   const SizedBox(height: 12),
                   Expanded(
                     child: TabBarView(
@@ -118,57 +135,42 @@ class _EditorPageState extends State<EditorPage>
   }
 }
 
-class _ConfigBar extends StatelessWidget {
-  const _ConfigBar({required this.app});
+class IconSwitch extends StatelessWidget {
+  const IconSwitch({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    required this.valueTrueIcon,
+    required this.valueFalseIcon,
+  });
 
-  final AppProvider app;
+  final bool value;
+  final void Function(bool)? onChanged;
+  final IconData valueTrueIcon;
+  final IconData valueFalseIcon;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: SectionHeader(
-                    title: "Theme configuration",
-                    subtitle:
-                        "Configure the themes throughout the app and preview.",
-                  ),
-                ),
-              ],
-            ),
-            SwitchListTile(
-              key: const Key('material3_switch'),
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Use Material 3'),
-              value: app.useMaterial3,
-              onChanged: app.setUseMaterial3,
-            ),
-            SwitchListTile(
-              key: const Key('preview_brightness_switch'),
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                app.isDark
-                    ? 'Preview Brightness: Dark'
-                    : 'Preview Brightness: Light',
-              ),
-              value: app.isDark,
-              onChanged: app.setPreviewBrightness,
-            ),
-            // SwitchListTile(
-            //   key: const Key('preview_separate_shell_switch'),
-            //   contentPadding: EdgeInsets.zero,
-            //   title: const Text('Keep editor brightness separate'),
-            //   value: app.keepEditorBrightnessSeparate,
-            //   onChanged: app.setKeepEditorBrightnessSeparate,
-            // ),
-          ],
+    var colorScheme2 = Theme.of(context).colorScheme;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Switch(
+          value: value,
+          onChanged: onChanged,
         ),
-      ),
+        Positioned(
+          left: value ? 34 : 14,
+          child: IgnorePointer(
+            child: Icon(
+              value ? valueTrueIcon : valueFalseIcon,
+              color: value ? colorScheme2.onSurface : colorScheme2.surface,
+              size: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

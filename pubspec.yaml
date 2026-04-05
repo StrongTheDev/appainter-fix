@@ -40,4 +40,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon.png
+    - assets/icon_plain.png
     - USAGE.md

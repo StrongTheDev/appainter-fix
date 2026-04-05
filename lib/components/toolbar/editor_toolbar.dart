@@ -23,7 +23,11 @@ class EditorToolbar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       title: Row(
         children: [
-          Icon(LucideIcons.palette, size: 30, color: foreground),
+          Image.asset(
+            "assets/icon_plain.png",
+            width: 30,
+            height: 30,
+          ),
           const SizedBox(width: 12),
           Text(
             'AppPainter Reborn',

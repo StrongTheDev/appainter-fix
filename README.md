@@ -1,4 +1,4 @@
-![logo](images/logo.png)
+![logo](images/logo_with_words.svg)
 
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/zeshuaro/appainter?color=orange&label=version)](https://github.com/zeshuaro/appainter/releases)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fzeshuaro.github.io%2Fappainter%2F)](https://zeshuaro.github.io/appainter/)
@@ -17,7 +17,7 @@
 
 A material theme editor and generator for Flutter to configure and preview the overall visual theme of your material app.
 
-Fork of [zeshuaro/appainter](https://github.com/zeshuaro/appainter)
+Fork of [zeshuaro/appainter](https://github.com/zeshuaro/appainter), rewritten to use Provider.
 
 ![Appainter Screenshot](images/screenshot.png)
 

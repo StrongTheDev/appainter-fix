@@ -192,16 +192,16 @@ class ThemeEditorController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setUseMaterial3(bool useMaterial3) {
-    _updatePreviewThemes(
-      (brightness, theme) => _rebuildPreviewBaseTheme(
-        theme,
-        brightness: brightness,
-        useMaterial3: useMaterial3,
-      ),
-    );
-    notifyListeners();
-  }
+  // void setUseMaterial3(bool useMaterial3) {
+  //   _updatePreviewThemes(
+  //     (brightness, theme) => _rebuildPreviewBaseTheme(
+  //       theme,
+  //       brightness: brightness,
+  //       useMaterial3: useMaterial3,
+  //     ),
+  //   );
+  //   notifyListeners();
+  // }
 
   void seedColorChanged(Color color) {
     _updatePreviewThemes((brightness, theme) {
@@ -534,13 +534,13 @@ class ThemeEditorController extends ChangeNotifier {
     );
   }
 
-  void _setPreviewThemeFor(Brightness brightness, ThemeData theme) {
-    if (brightness == Brightness.dark) {
-      _previewDarkThemeData = theme;
-    } else {
-      _previewLightThemeData = theme;
-    }
-  }
+  // void _setPreviewThemeFor(Brightness brightness, ThemeData theme) {
+  //   if (brightness == Brightness.dark) {
+  //     _previewDarkThemeData = theme;
+  //   } else {
+  //     _previewLightThemeData = theme;
+  //   }
+  // }
 
   void _updatePreviewThemes(
     ThemeData Function(Brightness brightness, ThemeData theme) update,

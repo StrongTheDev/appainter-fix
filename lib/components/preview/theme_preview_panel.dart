@@ -9,8 +9,6 @@ class ThemePreviewPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
-    final previewBrightnessLabel =
-        app.previewBrightness == Brightness.dark ? 'dark' : 'light';
 
     return Card(
       child: Padding(
@@ -20,10 +18,10 @@ class ThemePreviewPanel extends StatelessWidget {
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
+                clipBehavior: Clip.hardEdge,
                 child: DevicePreview(
-                  // key: ValueKey(
-                  //   '${app.previewBrightness.name}-${app.previewTheme.colorScheme.primary.toARGB32()}-${app.displayFontFamily}-${app.bodyFontFamily}',
-                  // ),
+                  backgroundColor:
+                      Theme.of(context).colorScheme.surfaceContainer,
                   enabled: true,
                   builder: (context) {
                     return MaterialApp(
@@ -61,7 +59,6 @@ class _PreviewScaffoldState extends State<_PreviewScaffold> {
 
   @override
   Widget build(BuildContext context) {
-
     return DefaultTabController(
       length: 3,
       child: Scaffold(

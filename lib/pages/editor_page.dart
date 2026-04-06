@@ -80,15 +80,15 @@ class _EditorPageState extends State<EditorPage>
                         ),
                       ),
                       const Spacer(),
-                      Tooltip(
-                        message: "Use Material ${app.useMaterial3 ? "2" : "3"}",
-                        child: IconSwitch(
-                          value: app.useMaterial3,
-                          onChanged: app.setUseMaterial3,
-                          valueTrueIcon: IconData(51, fontFamily: "monospace"),
-                          valueFalseIcon: IconData(50),
-                        ),
-                      ),
+                      // Tooltip(
+                      //   message: "Use Material ${app.useMaterial3 ? "2" : "3"}",
+                      //   child: IconSwitch(
+                      //     value: app.useMaterial3,
+                      //     onChanged: app.setUseMaterial3,
+                      //     valueTrueIcon: IconData(51, fontFamily: "monospace"),
+                      //     valueFalseIcon: IconData(50),
+                      //   ),
+                      // ),
                       Tooltip(
                         message:
                             "Set Preview Brightnes to ${app.isDark ? "Light" : "Dark"}",

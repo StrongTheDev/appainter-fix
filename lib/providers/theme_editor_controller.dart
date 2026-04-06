@@ -21,14 +21,16 @@ class ThemeEditorController extends ChangeNotifier {
   })  : _basicThemeService = basicThemeService ?? BasicThemeService(),
         _textService = textService ?? ThemeTextService(),
         _fontCatalogService = fontCatalogService ?? FontCatalogService(),
-        _previewThemeData = _buildInitialPreviewTheme();
+        _previewLightThemeData = _buildInitialPreviewTheme(Brightness.light),
+        _previewDarkThemeData = _buildInitialPreviewTheme(Brightness.dark);
 
   final HomeRepository homeRepo;
   final BasicThemeService _basicThemeService;
   final ThemeTextService _textService;
   final FontCatalogService _fontCatalogService;
 
-  ThemeData _previewThemeData;
+  ThemeData _previewLightThemeData;
+  ThemeData _previewDarkThemeData;
   AppStatus _status = AppStatus.initial;
   EditorMode _editorMode = EditorMode.basic;
   ThemeUsage? _themeUsage;
@@ -39,12 +41,16 @@ class ThemeEditorController extends ChangeNotifier {
   String? _bodyFontFamily;
   final Map<TextVariant, String?> _textVariantFonts = {};
 
-  static ThemeData _buildInitialPreviewTheme() {
+  static ThemeData _buildInitialPreviewTheme(Brightness brightness) {
     const seedColor = Color(0xFF2563EB);
     return ThemeData.from(
-      colorScheme: ColorScheme.fromSeed(seedColor: seedColor),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: seedColor,
+        brightness: brightness,
+      ),
       useMaterial3: true,
     ).copyWith(
+      brightness: brightness,
       primaryColor: seedColor,
     );
   }
@@ -53,7 +59,7 @@ class ThemeEditorController extends ChangeNotifier {
   EditorMode get editorMode => _editorMode;
   ThemeUsage? get themeUsage => _themeUsage;
   ThemeData get theme => previewTheme;
-  ThemeData get previewThemeData => _previewThemeData;
+  ThemeData get previewThemeData => _previewThemeFor(_previewBrightness);
   ThemeData get previewTheme => _buildPreviewTheme();
   ThemeData get editorTheme => _buildEditorTheme(editorBrightness);
   ThemeData get editorLightTheme => _buildEditorTheme(Brightness.light);
@@ -66,7 +72,7 @@ class ThemeEditorController extends ChangeNotifier {
   bool get isDark => _previewBrightness == Brightness.dark;
   bool get isEditorDark => editorBrightness == Brightness.dark;
   bool get keepEditorBrightnessSeparate => _keepEditorBrightnessSeparate;
-  bool get useMaterial3 => _previewThemeData.useMaterial3;
+  bool get useMaterial3 => previewThemeData.useMaterial3;
   ColorScheme get colorScheme => previewTheme.colorScheme;
   TextTheme get previewTextTheme => previewTheme.textTheme;
   String? get displayFontFamily => _displayFontFamily;
@@ -92,12 +98,6 @@ class ThemeEditorController extends ChangeNotifier {
     final saved = await homeRepo.getPreviewDarkTheme();
     if (saved != null) {
       _previewBrightness = saved ? Brightness.dark : Brightness.light;
-      _previewThemeData = _previewThemeData.copyWith(
-        brightness: _previewBrightness,
-        colorScheme: _previewThemeData.colorScheme.copyWith(
-          brightness: _previewBrightness,
-        ),
-      );
       notifyListeners();
     }
   }
@@ -118,12 +118,6 @@ class ThemeEditorController extends ChangeNotifier {
   Future<void> setPreviewBrightness(bool isDarkTheme) async {
     _previewBrightness = isDarkTheme ? Brightness.dark : Brightness.light;
     await homeRepo.setPreviewDarkTheme(isDarkTheme);
-    _previewThemeData = _previewThemeData.copyWith(
-      brightness: _previewBrightness,
-      colorScheme: _previewThemeData.colorScheme.copyWith(
-        brightness: _previewBrightness,
-      ),
-    );
     notifyListeners();
   }
 
@@ -152,10 +146,13 @@ class ThemeEditorController extends ChangeNotifier {
     if (imported == null) return;
 
     _previewBrightness = imported.brightness;
-    _previewThemeData = imported.copyWith(
-      colorScheme: imported.colorScheme.copyWith(
-        brightness: imported.brightness,
-      ),
+    _previewLightThemeData = _deriveThemeForBrightness(
+      imported,
+      Brightness.light,
+    );
+    _previewDarkThemeData = _deriveThemeForBrightness(
+      imported,
+      Brightness.dark,
     );
     _displayFontFamily = null;
     _bodyFontFamily = null;
@@ -167,15 +164,8 @@ class ThemeEditorController extends ChangeNotifier {
   Future<void> exportTheme() => homeRepo.exportTheme(previewTheme);
 
   void resetTheme() {
-    _previewThemeData = ThemeData.from(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF2563EB),
-        brightness: _previewBrightness,
-      ),
-      useMaterial3: true,
-    ).copyWith(
-      primaryColor: const Color(0xFF2563EB),
-    );
+    _previewLightThemeData = _buildInitialPreviewTheme(Brightness.light);
+    _previewDarkThemeData = _buildInitialPreviewTheme(Brightness.dark);
     _displayFontFamily = null;
     _bodyFontFamily = null;
     _textVariantFonts.clear();
@@ -183,122 +173,136 @@ class ThemeEditorController extends ChangeNotifier {
   }
 
   void randomizeTheme([int? seed]) {
-    final scheme = randomColorScheme(
-      seed: seed ?? DateTime.now().millisecondsSinceEpoch,
-      isDark: isDark,
-      shouldPrint: false,
-    );
-    _previewThemeData = _previewThemeData.copyWith(
-      brightness: _previewBrightness,
-      colorScheme: scheme.copyWith(brightness: _previewBrightness),
-      primaryColor: scheme.primary,
-      primaryColorLight: UtilService.getColorSwatch(scheme.primary)[100],
-      primaryColorDark: UtilService.getColorSwatch(scheme.primary)[700],
-      secondaryHeaderColor: UtilService.getColorSwatch(scheme.primary)[50],
-    );
+    final randomSeed = seed ?? DateTime.now().millisecondsSinceEpoch;
+    _updatePreviewThemes((brightness, theme) {
+      final scheme = randomColorScheme(
+        seed: randomSeed,
+        isDark: brightness == Brightness.dark,
+        shouldPrint: false,
+      ).copyWith(brightness: brightness);
+      return theme.copyWith(
+        brightness: brightness,
+        colorScheme: scheme,
+        primaryColor: scheme.primary,
+        primaryColorLight: UtilService.getColorSwatch(scheme.primary)[100],
+        primaryColorDark: UtilService.getColorSwatch(scheme.primary)[700],
+        secondaryHeaderColor: UtilService.getColorSwatch(scheme.primary)[50],
+      );
+    });
     notifyListeners();
   }
 
   void setUseMaterial3(bool useMaterial3) {
-    _previewThemeData = _previewThemeData.copyWith(useMaterial3: useMaterial3);
+    _updatePreviewThemes(
+      (brightness, theme) => theme.copyWith(useMaterial3: useMaterial3),
+    );
     notifyListeners();
   }
 
   void seedColorChanged(Color color) {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: color,
-      brightness: _previewBrightness,
-    );
-    _previewThemeData = _previewThemeData.copyWith(
-      colorScheme: scheme,
-      primaryColor: color,
-      primaryColorLight: UtilService.getColorSwatch(color)[100],
-      primaryColorDark: UtilService.getColorSwatch(color)[700],
-      secondaryHeaderColor: UtilService.getColorSwatch(color)[50],
-    );
+    _updatePreviewThemes((brightness, theme) {
+      final scheme = ColorScheme.fromSeed(
+        seedColor: color,
+        brightness: brightness,
+      );
+      return theme.copyWith(
+        brightness: brightness,
+        colorScheme: scheme,
+        primaryColor: color,
+        primaryColorLight: UtilService.getColorSwatch(color)[100],
+        primaryColorDark: UtilService.getColorSwatch(color)[700],
+        secondaryHeaderColor: UtilService.getColorSwatch(color)[50],
+      );
+    });
     notifyListeners();
   }
 
   void primaryColorChanged(Color color) {
     final swatch = UtilService.getColorSwatch(color);
     final onColor = _basicThemeService.getOnKeyColor(color);
-    _previewThemeData = _previewThemeData.copyWith(
-      primaryColor: color,
-      primaryColorLight: swatch[100],
-      primaryColorDark: swatch[700],
-      secondaryHeaderColor: swatch[50],
-      colorScheme: _previewThemeData.colorScheme.copyWith(
-        primary: color,
-        onPrimary: onColor,
-      ),
-    );
+    _updatePreviewThemes((brightness, theme) {
+      return theme.copyWith(
+        primaryColor: color,
+        primaryColorLight: swatch[100],
+        primaryColorDark: swatch[700],
+        secondaryHeaderColor: swatch[50],
+        colorScheme: theme.colorScheme.copyWith(
+          primary: color,
+          onPrimary: onColor,
+        ),
+      );
+    });
     notifyListeners();
   }
 
   void onPrimaryColorChanged(Color color) => _updateColorScheme(
-      _previewThemeData.colorScheme.copyWith(onPrimary: color));
+      (scheme) => scheme.copyWith(onPrimary: color));
 
   void secondaryColorChanged(Color color) => _updateColorScheme(
-        _previewThemeData.colorScheme.copyWith(
+        (scheme) => scheme.copyWith(
           secondary: color,
           onSecondary: _basicThemeService.getOnKeyColor(color),
         ),
       );
 
   void surfaceColorChanged(Color color) => _updateColorScheme(
-      _previewThemeData.colorScheme.copyWith(surface: color));
+      (scheme) => scheme.copyWith(surface: color));
 
   void errorColorChanged(Color color) =>
-      _updateColorScheme(_previewThemeData.colorScheme.copyWith(error: color));
+      _updateColorScheme((scheme) => scheme.copyWith(error: color));
 
   void outlineColorChanged(Color color) => _updateColorScheme(
-      _previewThemeData.colorScheme.copyWith(outline: color));
+      (scheme) => scheme.copyWith(outline: color));
 
   void inversePrimaryColorChanged(Color color) => _updateColorScheme(
-        _previewThemeData.colorScheme.copyWith(inversePrimary: color),
+        (scheme) => scheme.copyWith(inversePrimary: color),
       );
 
   void onSurfaceColorChanged(Color color) => _updateColorScheme(
-      _previewThemeData.colorScheme.copyWith(onSurface: color));
+      (scheme) => scheme.copyWith(onSurface: color));
 
   void surfaceContainerHighestColorChanged(Color color) => _updateColorScheme(
-        _previewThemeData.colorScheme.copyWith(surfaceContainerHighest: color),
+        (scheme) => scheme.copyWith(surfaceContainerHighest: color),
       );
 
   void onSurfaceVariantColorChanged(Color color) => _updateColorScheme(
-        _previewThemeData.colorScheme.copyWith(onSurfaceVariant: color),
+        (scheme) => scheme.copyWith(onSurfaceVariant: color),
       );
 
   void inverseSurfaceColorChanged(Color color) => _updateColorScheme(
-        _previewThemeData.colorScheme.copyWith(inverseSurface: color),
+        (scheme) => scheme.copyWith(inverseSurface: color),
       );
 
   void onInverseSurfaceColorChanged(Color color) => _updateColorScheme(
-        _previewThemeData.colorScheme.copyWith(onInverseSurface: color),
+        (scheme) => scheme.copyWith(onInverseSurface: color),
       );
 
   void appBarBackgroundColorChanged(Color color) {
-    _previewThemeData = _previewThemeData.copyWith(
-      appBarTheme: _previewThemeData.appBarTheme.copyWith(
-        backgroundColor: color,
-        foregroundColor: _basicThemeService.getOnKeyColor(color),
+    _updatePreviewThemes(
+      (brightness, theme) => theme.copyWith(
+        appBarTheme: theme.appBarTheme.copyWith(
+          backgroundColor: color,
+          foregroundColor: _basicThemeService.getOnKeyColor(color),
+        ),
       ),
     );
     notifyListeners();
   }
 
   void filledButtonBackgroundColorChanged(Color color) {
-    _previewThemeData = _previewThemeData.copyWith(
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: _basicThemeService.getOnKeyColor(color),
+    _updatePreviewThemes(
+      (brightness, theme) => theme.copyWith(
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: color,
+            foregroundColor: _basicThemeService.getOnKeyColor(color),
+          ),
         ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: _basicThemeService.getOnKeyColor(color),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: color,
+            foregroundColor: _basicThemeService.getOnKeyColor(color),
+          ),
         ),
       ),
     );
@@ -306,16 +310,18 @@ class ThemeEditorController extends ChangeNotifier {
   }
 
   void outlinedButtonColorChanged(Color color) {
-    _previewThemeData = _previewThemeData.copyWith(
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: color,
-          side: BorderSide(color: color),
+    _updatePreviewThemes(
+      (brightness, theme) => theme.copyWith(
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: color,
+            side: BorderSide(color: color),
+          ),
         ),
-      ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: color,
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: color,
+          ),
         ),
       ),
     );
@@ -323,21 +329,23 @@ class ThemeEditorController extends ChangeNotifier {
   }
 
   void inputFillColorChanged(Color color) {
-    _previewThemeData = _previewThemeData.copyWith(
-      inputDecorationTheme: _previewThemeData.inputDecorationTheme.copyWith(
-        filled: true,
-        fillColor: color,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: _previewThemeData.colorScheme.outline),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: _previewThemeData.colorScheme.primary),
+    _updatePreviewThemes(
+      (brightness, theme) => theme.copyWith(
+        inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+          filled: true,
+          fillColor: color,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: theme.colorScheme.outline),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: theme.colorScheme.primary),
+          ),
         ),
       ),
     );
@@ -345,33 +353,37 @@ class ThemeEditorController extends ChangeNotifier {
   }
 
   void tabIndicatorColorChanged(Color color) {
-    _previewThemeData = _previewThemeData.copyWith(
-      tabBarTheme: _previewThemeData.tabBarTheme.copyWith(
-        indicatorColor: color,
-        labelColor: color,
-        unselectedLabelColor: color.withValues(alpha: 0.7),
+    _updatePreviewThemes(
+      (brightness, theme) => theme.copyWith(
+        tabBarTheme: theme.tabBarTheme.copyWith(
+          indicatorColor: color,
+          labelColor: color,
+          unselectedLabelColor: color.withValues(alpha: 0.7),
+        ),
       ),
     );
     notifyListeners();
   }
 
   void fabBackgroundColorChanged(Color color) {
-    _previewThemeData = _previewThemeData.copyWith(
-      floatingActionButtonTheme:
-          _previewThemeData.floatingActionButtonTheme.copyWith(
-        backgroundColor: color,
-        foregroundColor: _basicThemeService.getOnKeyColor(color),
+    _updatePreviewThemes(
+      (brightness, theme) => theme.copyWith(
+        floatingActionButtonTheme: theme.floatingActionButtonTheme.copyWith(
+          backgroundColor: color,
+          foregroundColor: _basicThemeService.getOnKeyColor(color),
+        ),
       ),
     );
     notifyListeners();
   }
 
   void bottomNavigationColorChanged(Color color) {
-    _previewThemeData = _previewThemeData.copyWith(
-      bottomNavigationBarTheme:
-          _previewThemeData.bottomNavigationBarTheme.copyWith(
-        selectedItemColor: color,
-        unselectedItemColor: color.withValues(alpha: 0.6),
+    _updatePreviewThemes(
+      (brightness, theme) => theme.copyWith(
+        bottomNavigationBarTheme: theme.bottomNavigationBarTheme.copyWith(
+          selectedItemColor: color,
+          unselectedItemColor: color.withValues(alpha: 0.6),
+        ),
       ),
     );
     notifyListeners();
@@ -414,8 +426,12 @@ class ThemeEditorController extends ChangeNotifier {
         FontRole.body => _bodyFontFamily,
       };
 
-  void _updateColorScheme(ColorScheme scheme) {
-    _previewThemeData = _previewThemeData.copyWith(colorScheme: scheme);
+  void _updateColorScheme(ColorScheme Function(ColorScheme scheme) update) {
+    _updatePreviewThemes(
+      (brightness, theme) => theme.copyWith(
+        colorScheme: update(theme.colorScheme).copyWith(brightness: brightness),
+      ),
+    );
     notifyListeners();
   }
 
@@ -427,10 +443,11 @@ class ThemeEditorController extends ChangeNotifier {
   }
 
   ThemeData _buildPreviewTheme() {
-    final colorScheme = _previewThemeData.colorScheme.copyWith(
+    final base = _previewThemeFor(_previewBrightness);
+    final colorScheme = base.colorScheme.copyWith(
       brightness: _previewBrightness,
     );
-    final baseTheme = _previewThemeData.copyWith(
+    final baseTheme = base.copyWith(
       brightness: _previewBrightness,
       colorScheme: colorScheme,
     );
@@ -456,6 +473,45 @@ class ThemeEditorController extends ChangeNotifier {
         ),
       ),
     );
+  }
+
+  ThemeData _previewThemeFor(Brightness brightness) {
+    return brightness == Brightness.dark
+        ? _previewDarkThemeData
+        : _previewLightThemeData;
+  }
+
+  ThemeData _deriveThemeForBrightness(ThemeData source, Brightness brightness) {
+    final seedColor = source.primaryColor != Colors.transparent
+        ? source.primaryColor
+        : source.colorScheme.primary;
+    final derivedScheme = ColorScheme.fromSeed(
+      seedColor: seedColor,
+      brightness: brightness,
+    );
+    return source.copyWith(
+      brightness: brightness,
+      colorScheme: derivedScheme,
+      primaryColor: seedColor,
+      primaryColorLight: UtilService.getColorSwatch(seedColor)[100],
+      primaryColorDark: UtilService.getColorSwatch(seedColor)[700],
+      secondaryHeaderColor: UtilService.getColorSwatch(seedColor)[50],
+    );
+  }
+
+  void _setPreviewThemeFor(Brightness brightness, ThemeData theme) {
+    if (brightness == Brightness.dark) {
+      _previewDarkThemeData = theme;
+    } else {
+      _previewLightThemeData = theme;
+    }
+  }
+
+  void _updatePreviewThemes(
+    ThemeData Function(Brightness brightness, ThemeData theme) update,
+  ) {
+    _previewLightThemeData = update(Brightness.light, _previewLightThemeData);
+    _previewDarkThemeData = update(Brightness.dark, _previewDarkThemeData);
   }
 
   ThemeData _buildEditorTheme(Brightness brightness) {

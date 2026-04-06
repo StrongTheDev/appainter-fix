@@ -9,25 +9,44 @@ class ThemePreviewPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
+    final previewBrightnessLabel =
+        app.previewBrightness == Brightness.dark ? 'dark' : 'light';
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            Row(
+              children: [
+                Text(
+                  'Preview brightness:',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(width: 8),
+                Chip(
+                  key: const Key('preview_brightness_label'),
+                  label: Text(previewBrightnessLabel),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: DevicePreview(
+                  // key: ValueKey(
+                  //   '${app.previewBrightness.name}-${app.previewTheme.colorScheme.primary.toARGB32()}-${app.displayFontFamily}-${app.bodyFontFamily}',
+                  // ),
                   enabled: true,
                   builder: (context) {
                     return MaterialApp(
-                      key: ValueKey(
-                        '${app.previewBrightness.name}-${app.previewTheme.colorScheme.primary.toARGB32()}-${app.displayFontFamily}-${app.bodyFontFamily}',
-                      ),
                       debugShowCheckedModeBanner: false,
                       themeAnimationDuration: Durations.short2,
-                      theme: app.previewTheme,
+                      theme: ThemeData(
+                        colorScheme: app.previewTheme.colorScheme,
+                        brightness: app.previewBrightness,
+                      ),
                       locale: DevicePreview.locale(context),
                       home: const _PreviewScaffold(),
                     );
@@ -56,11 +75,32 @@ class _PreviewScaffoldState extends State<_PreviewScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    final previewBrightness =
+        Theme.of(context).brightness == Brightness.dark ? 'dark' : 'light';
+
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Theme Preview'),
+          title: Row(
+            children: [
+              const Text('Theme Preview'),
+              const SizedBox(width: 12),
+              Container(
+                key: const Key('preview_rendered_brightness_label'),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  previewBrightness,
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
+              ),
+            ],
+          ),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Buttons'),

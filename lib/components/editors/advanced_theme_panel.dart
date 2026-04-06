@@ -9,90 +9,173 @@ class AdvancedThemePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final app = context.watch<AppProvider>();
-    final families = app.availableFontFamilies;
-
     return Card(
       child: ListView(
         padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            'Typography',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Choose the two broad font roles first, then fine-tune individual text styles.',
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          const SizedBox(height: 16),
+        children: const [
+          _TypographyIntro(),
+          SizedBox(height: 16),
           _AdvancedSection(
             title: 'Font Roles',
-            child: Column(
-              children: [
-                FontFamilyDropdown(
-                  label: 'Display, headings & titles',
-                  value: app.displayFontFamily,
-                  options: families,
-                  dropdownKey: const Key('basic_display_font_dropdown'),
-                  onChanged: app.setDisplayFontFamily,
-                ),
-                const SizedBox(height: 12),
-                FontFamilyDropdown(
-                  label: 'Body & labels',
-                  value: app.bodyFontFamily,
-                  options: families,
-                  dropdownKey: const Key('basic_body_font_dropdown'),
-                  onChanged: app.setBodyFontFamily,
-                ),
-              ],
-            ),
+            child: _FontRolesSection(),
           ),
           _AdvancedSection(
             title: 'Fine Tune Styles',
-            child: Column(
-              children: [
-                ...TextVariant.values.map(
-                  (variant) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: FontFamilyDropdown(
-                            label: variant.label,
-                            value: app.fontForVariant(variant),
-                            options: families,
-                            dropdownKey: Key('advanced_font_${variant.name}'),
-                            hintText: variant.role == FontRole.display
-                                ? 'Falls back to ${app.displayFontFamily ?? 'Default display font'}'
-                                : 'Falls back to ${app.bodyFontFamily ?? 'Default body font'}',
-                            onChanged: (value) => app.setTextStyleFont(
-                              variant,
-                              value,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          key: Key('advanced_font_reset_${variant.name}'),
-                          tooltip: 'Reset ${variant.label}',
-                          onPressed: app.hasTextStyleOverride(variant)
-                              ? () => app.clearTextStyleFont(variant)
-                              : null,
-                          icon: const Icon(Icons.restart_alt),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: _TypographyVariantList(),
           ),
         ],
       ),
     );
   }
+}
+
+class _TypographyIntro extends StatelessWidget {
+  const _TypographyIntro();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Typography',
+          style: textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Choose the two broad font roles first, then fine-tune individual text styles.',
+          style: textTheme.bodyLarge,
+        ),
+      ],
+    );
+  }
+}
+
+class _FontRolesSection extends StatelessWidget {
+  const _FontRolesSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final families = context.read<AppProvider>().availableFontFamilies;
+    return Column(
+      children: [
+        Selector<AppProvider, String?>(
+          selector: (_, app) => app.displayFontFamily,
+          builder: (context, displayFontFamily, _) {
+            return FontFamilyDropdown(
+              label: 'Display, headings & titles',
+              value: displayFontFamily,
+              options: families,
+              dropdownKey: const Key('basic_display_font_dropdown'),
+              onChanged: context.read<AppProvider>().setDisplayFontFamily,
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        Selector<AppProvider, String?>(
+          selector: (_, app) => app.bodyFontFamily,
+          builder: (context, bodyFontFamily, _) {
+            return FontFamilyDropdown(
+              label: 'Body & labels',
+              value: bodyFontFamily,
+              options: families,
+              dropdownKey: const Key('basic_body_font_dropdown'),
+              onChanged: context.read<AppProvider>().setBodyFontFamily,
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _TypographyVariantList extends StatelessWidget {
+  const _TypographyVariantList();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: TextVariant.values.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        return _TypographyVariantRow(variant: TextVariant.values[index]);
+      },
+    );
+  }
+}
+
+class _TypographyVariantRow extends StatelessWidget {
+  const _TypographyVariantRow({required this.variant});
+
+  final TextVariant variant;
+
+  @override
+  Widget build(BuildContext context) {
+    final families = context.read<AppProvider>().availableFontFamilies;
+
+    return Selector<AppProvider, _TypographyRowState>(
+      selector: (_, app) => _TypographyRowState(
+        value: app.fontForVariant(variant),
+        hasOverride: app.hasTextStyleOverride(variant),
+        fallbackLabel: variant.role == FontRole.display
+            ? app.displayFontFamily ?? 'Default display font'
+            : app.bodyFontFamily ?? 'Default body font',
+      ),
+      builder: (context, rowState, _) {
+        final app = context.read<AppProvider>();
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: FontFamilyDropdown(
+                label: variant.label,
+                value: rowState.value,
+                options: families,
+                dropdownKey: Key('advanced_font_${variant.name}'),
+                hintText: 'Falls back to ${rowState.fallbackLabel}',
+                onChanged: (value) => app.setTextStyleFont(variant, value),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              key: Key('advanced_font_reset_${variant.name}'),
+              tooltip: 'Reset ${variant.label}',
+              onPressed: rowState.hasOverride
+                  ? () => app.clearTextStyleFont(variant)
+                  : null,
+              icon: const Icon(Icons.restart_alt),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _TypographyRowState {
+  const _TypographyRowState({
+    required this.value,
+    required this.hasOverride,
+    required this.fallbackLabel,
+  });
+
+  final String? value;
+  final bool hasOverride;
+  final String fallbackLabel;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _TypographyRowState &&
+        other.value == value &&
+        other.hasOverride == hasOverride &&
+        other.fallbackLabel == fallbackLabel;
+  }
+
+  @override
+  int get hashCode => Object.hash(value, hasOverride, fallbackLabel);
 }
 
 class _AdvancedSection extends StatelessWidget {

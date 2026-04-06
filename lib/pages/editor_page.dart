@@ -44,8 +44,11 @@ class _EditorPageState extends State<EditorPage>
 
   @override
   Widget build(BuildContext context) {
-    final app = context.watch<AppProvider>();
-    final targetIndex = EditorMode.values.indexOf(app.editorMode);
+    final editorMode = context.select<AppProvider, EditorMode>(
+      (app) => app.editorMode,
+    );
+    final isDark = context.select<AppProvider, bool>((app) => app.isDark);
+    final targetIndex = EditorMode.values.indexOf(editorMode);
     if (_controller.index != targetIndex) {
       _controller.animateTo(targetIndex);
     }
@@ -91,10 +94,11 @@ class _EditorPageState extends State<EditorPage>
                       // ),
                       Tooltip(
                         message:
-                            "Set Preview Brightnes to ${app.isDark ? "Light" : "Dark"}",
+                            "Set Preview Brightnes to ${isDark ? "Light" : "Dark"}",
                         child: IconSwitch(
-                          value: app.isDark,
-                          onChanged: app.setPreviewBrightness,
+                          value: isDark,
+                          onChanged:
+                              context.read<AppProvider>().setPreviewBrightness,
                           valueTrueIcon: LucideIcons.moonStar,
                           valueFalseIcon: LucideIcons.sun,
                         ),
@@ -118,8 +122,8 @@ class _EditorPageState extends State<EditorPage>
                     child: TabBarView(
                       controller: _controller,
                       children: const [
-                        BasicThemePanel(),
-                        AdvancedThemePanel(),
+                        _KeepAliveTab(child: BasicThemePanel()),
+                        _KeepAliveTab(child: AdvancedThemePanel()),
                       ],
                     ),
                   ),
@@ -132,6 +136,27 @@ class _EditorPageState extends State<EditorPage>
         ),
       ),
     );
+  }
+}
+
+class _KeepAliveTab extends StatefulWidget {
+  const _KeepAliveTab({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_KeepAliveTab> createState() => _KeepAliveTabState();
+}
+
+class _KeepAliveTabState extends State<_KeepAliveTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }
 

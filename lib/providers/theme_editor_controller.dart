@@ -45,6 +45,8 @@ class ThemeEditorController extends ChangeNotifier {
   String? _bodyFontFamily;
   final Map<TextVariant, String?> _textVariantFonts = {};
   final Map<String, Color> _colorMap = {};
+  ThemeData? _cachedPreviewTheme;
+  Brightness? _cachedPreviewBrightness;
 
   static const List<String> editableColorFields = [
     'seed',
@@ -96,7 +98,16 @@ class ThemeEditorController extends ChangeNotifier {
   ThemeUsage? get themeUsage => _themeUsage;
   ThemeData get theme => previewTheme;
   ThemeData get previewThemeData => _previewThemeFor(_previewBrightness);
-  ThemeData get previewTheme => _buildPreviewTheme();
+  ThemeData get previewTheme {
+    if (_cachedPreviewTheme != null &&
+        _cachedPreviewBrightness == _previewBrightness) {
+      return _cachedPreviewTheme!;
+    }
+    final built = _buildPreviewTheme();
+    _cachedPreviewTheme = built;
+    _cachedPreviewBrightness = _previewBrightness;
+    return built;
+  }
   ThemeData get editorTheme => _buildEditorTheme(editorBrightness);
   ThemeData get editorLightTheme => _buildEditorTheme(Brightness.light);
   ThemeData get editorDarkTheme => _buildEditorTheme(Brightness.dark);
@@ -155,6 +166,7 @@ class ThemeEditorController extends ChangeNotifier {
 
   Future<void> setPreviewBrightness(bool isDarkTheme) async {
     _previewBrightness = isDarkTheme ? Brightness.dark : Brightness.light;
+    _invalidatePreviewThemeCache();
     await homeRepo.setPreviewDarkTheme(isDarkTheme);
     notifyListeners();
   }
@@ -197,6 +209,7 @@ class ThemeEditorController extends ChangeNotifier {
     _textVariantFonts.clear();
     _syncColorMapFromTheme();
     _editorMode = EditorMode.advanced;
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -209,6 +222,7 @@ class ThemeEditorController extends ChangeNotifier {
     _bodyFontFamily = null;
     _textVariantFonts.clear();
     _syncColorMapFromTheme();
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -230,6 +244,7 @@ class ThemeEditorController extends ChangeNotifier {
       );
     });
     _syncColorMapFromTheme();
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -263,6 +278,7 @@ class ThemeEditorController extends ChangeNotifier {
           secondaryHeaderColor: UtilService.getColorSwatch(color)[50],
         );
       });
+      _invalidatePreviewThemeCache();
       notifyListeners();
       return;
     }
@@ -275,6 +291,7 @@ class ThemeEditorController extends ChangeNotifier {
         color: color,
       ),
     );
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -306,6 +323,7 @@ class ThemeEditorController extends ChangeNotifier {
         ),
       ),
     );
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -326,6 +344,7 @@ class ThemeEditorController extends ChangeNotifier {
         ),
       ),
     );
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -345,6 +364,7 @@ class ThemeEditorController extends ChangeNotifier {
         ),
       ),
     );
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -369,6 +389,7 @@ class ThemeEditorController extends ChangeNotifier {
         ),
       ),
     );
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -382,6 +403,7 @@ class ThemeEditorController extends ChangeNotifier {
         ),
       ),
     );
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -394,6 +416,7 @@ class ThemeEditorController extends ChangeNotifier {
         ),
       ),
     );
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -406,16 +429,19 @@ class ThemeEditorController extends ChangeNotifier {
         ),
       ),
     );
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
   void setDisplayFontFamily(String? family) {
     _displayFontFamily = _normalizeFontFamily(family);
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
   void setBodyFontFamily(String? family) {
     _bodyFontFamily = _normalizeFontFamily(family);
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -426,11 +452,13 @@ class ThemeEditorController extends ChangeNotifier {
     } else {
       _textVariantFonts[variant] = normalized;
     }
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
   void clearTextStyleFont(TextVariant variant) {
     _textVariantFonts.remove(variant);
+    _invalidatePreviewThemeCache();
     notifyListeners();
   }
 
@@ -680,6 +708,12 @@ class ThemeEditorController extends ChangeNotifier {
   ) {
     _previewLightThemeData = update(Brightness.light, _previewLightThemeData);
     _previewDarkThemeData = update(Brightness.dark, _previewDarkThemeData);
+    _invalidatePreviewThemeCache();
+  }
+
+  void _invalidatePreviewThemeCache() {
+    _cachedPreviewTheme = null;
+    _cachedPreviewBrightness = null;
   }
 
   ThemeData _buildEditorTheme(Brightness brightness) {

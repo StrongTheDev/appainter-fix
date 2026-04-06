@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:appainter/models/text_variant.dart';
 import 'package:appainter/models/theme_usage.dart';
 import 'package:appainter/repositories/home_repository.dart';
@@ -22,7 +24,9 @@ class ThemeEditorController extends ChangeNotifier {
         _textService = textService ?? ThemeTextService(),
         _fontCatalogService = fontCatalogService ?? FontCatalogService(),
         _previewLightThemeData = _buildInitialPreviewTheme(Brightness.light),
-        _previewDarkThemeData = _buildInitialPreviewTheme(Brightness.dark);
+        _previewDarkThemeData = _buildInitialPreviewTheme(Brightness.dark) {
+    _syncColorMapFromTheme();
+  }
 
   final HomeRepository homeRepo;
   final BasicThemeService _basicThemeService;
@@ -40,6 +44,38 @@ class ThemeEditorController extends ChangeNotifier {
   String? _displayFontFamily;
   String? _bodyFontFamily;
   final Map<TextVariant, String?> _textVariantFonts = {};
+  final Map<String, Color> _colorMap = {};
+
+  static const List<String> editableColorFields = [
+    'seed',
+    'primary',
+    'onPrimary',
+    'primaryContainer',
+    'onPrimaryContainer',
+    'secondary',
+    'onSecondary',
+    'secondaryContainer',
+    'onSecondaryContainer',
+    'tertiary',
+    'onTertiary',
+    'tertiaryContainer',
+    'onTertiaryContainer',
+    'error',
+    'onError',
+    'errorContainer',
+    'onErrorContainer',
+    'surface',
+    'onSurface',
+    'surfaceContainerHighest',
+    'onSurfaceVariant',
+    'outline',
+    'outlineVariant',
+    'inverseSurface',
+    'onInverseSurface',
+    'inversePrimary',
+    'surfaceTint',
+    'scrim',
+  ];
 
   static ThemeData _buildInitialPreviewTheme(Brightness brightness) {
     const seedColor = Color(0xFF2563EB);
@@ -78,6 +114,7 @@ class ThemeEditorController extends ChangeNotifier {
   String? get displayFontFamily => _displayFontFamily;
   String? get bodyFontFamily => _bodyFontFamily;
   List<String> get availableFontFamilies => _fontCatalogService.families;
+  Map<String, Color> get colorMap => UnmodifiableMapView(_colorMap);
 
   Future<void> initialize() async {
     await Future.wait([
@@ -86,6 +123,7 @@ class ThemeEditorController extends ChangeNotifier {
       _fetchEditorBrightness(),
     ]);
     _status = AppStatus.ready;
+    _syncColorMapFromTheme();
     notifyListeners();
   }
 
@@ -157,6 +195,7 @@ class ThemeEditorController extends ChangeNotifier {
     _displayFontFamily = null;
     _bodyFontFamily = null;
     _textVariantFonts.clear();
+    _syncColorMapFromTheme();
     _editorMode = EditorMode.advanced;
     notifyListeners();
   }
@@ -169,6 +208,7 @@ class ThemeEditorController extends ChangeNotifier {
     _displayFontFamily = null;
     _bodyFontFamily = null;
     _textVariantFonts.clear();
+    _syncColorMapFromTheme();
     notifyListeners();
   }
 
@@ -189,6 +229,7 @@ class ThemeEditorController extends ChangeNotifier {
         secondaryHeaderColor: UtilService.getColorSwatch(scheme.primary)[50],
       );
     });
+    _syncColorMapFromTheme();
     notifyListeners();
   }
 
@@ -200,86 +241,61 @@ class ThemeEditorController extends ChangeNotifier {
   //       useMaterial3: useMaterial3,
   //     ),
   //   );
+  //   _syncColorMapFromTheme();
   //   notifyListeners();
   // }
 
-  void seedColorChanged(Color color) {
-    _updatePreviewThemes((brightness, theme) {
-      final scheme = ColorScheme.fromSeed(
-        seedColor: color,
+  void setColor(String field, Color color) {
+    _colorMap[field] = color;
+
+    if (field == 'seed') {
+      _updatePreviewThemes((brightness, theme) {
+        final scheme = ColorScheme.fromSeed(
+          seedColor: color,
+          brightness: brightness,
+        );
+        return theme.copyWith(
+          brightness: brightness,
+          colorScheme: scheme,
+          primaryColor: color,
+          primaryColorLight: UtilService.getColorSwatch(color)[100],
+          primaryColorDark: UtilService.getColorSwatch(color)[700],
+          secondaryHeaderColor: UtilService.getColorSwatch(color)[50],
+        );
+      });
+      notifyListeners();
+      return;
+    }
+
+    _updatePreviewThemes(
+      (brightness, theme) => _applyColorField(
+        theme,
         brightness: brightness,
-      );
-      return theme.copyWith(
-        brightness: brightness,
-        colorScheme: scheme,
-        primaryColor: color,
-        primaryColorLight: UtilService.getColorSwatch(color)[100],
-        primaryColorDark: UtilService.getColorSwatch(color)[700],
-        secondaryHeaderColor: UtilService.getColorSwatch(color)[50],
-      );
-    });
+        field: field,
+        color: color,
+      ),
+    );
     notifyListeners();
   }
 
-  void primaryColorChanged(Color color) {
-    final swatch = UtilService.getColorSwatch(color);
-    final onColor = _basicThemeService.getOnKeyColor(color);
-    _updatePreviewThemes((brightness, theme) {
-      return theme.copyWith(
-        primaryColor: color,
-        primaryColorLight: swatch[100],
-        primaryColorDark: swatch[700],
-        secondaryHeaderColor: swatch[50],
-        colorScheme: theme.colorScheme.copyWith(
-          primary: color,
-          onPrimary: onColor,
-        ),
-      );
-    });
-    notifyListeners();
-  }
-
-  void onPrimaryColorChanged(Color color) => _updateColorScheme(
-      (scheme) => scheme.copyWith(onPrimary: color));
-
-  void secondaryColorChanged(Color color) => _updateColorScheme(
-        (scheme) => scheme.copyWith(
-          secondary: color,
-          onSecondary: _basicThemeService.getOnKeyColor(color),
-        ),
-      );
-
-  void surfaceColorChanged(Color color) => _updateColorScheme(
-      (scheme) => scheme.copyWith(surface: color));
-
-  void errorColorChanged(Color color) =>
-      _updateColorScheme((scheme) => scheme.copyWith(error: color));
-
-  void outlineColorChanged(Color color) => _updateColorScheme(
-      (scheme) => scheme.copyWith(outline: color));
-
-  void inversePrimaryColorChanged(Color color) => _updateColorScheme(
-        (scheme) => scheme.copyWith(inversePrimary: color),
-      );
-
-  void onSurfaceColorChanged(Color color) => _updateColorScheme(
-      (scheme) => scheme.copyWith(onSurface: color));
-
-  void surfaceContainerHighestColorChanged(Color color) => _updateColorScheme(
-        (scheme) => scheme.copyWith(surfaceContainerHighest: color),
-      );
-
-  void onSurfaceVariantColorChanged(Color color) => _updateColorScheme(
-        (scheme) => scheme.copyWith(onSurfaceVariant: color),
-      );
-
-  void inverseSurfaceColorChanged(Color color) => _updateColorScheme(
-        (scheme) => scheme.copyWith(inverseSurface: color),
-      );
-
-  void onInverseSurfaceColorChanged(Color color) => _updateColorScheme(
-        (scheme) => scheme.copyWith(onInverseSurface: color),
-      );
+  void seedColorChanged(Color color) => setColor('seed', color);
+  void primaryColorChanged(Color color) => setColor('primary', color);
+  void onPrimaryColorChanged(Color color) => setColor('onPrimary', color);
+  void secondaryColorChanged(Color color) => setColor('secondary', color);
+  void surfaceColorChanged(Color color) => setColor('surface', color);
+  void errorColorChanged(Color color) => setColor('error', color);
+  void outlineColorChanged(Color color) => setColor('outline', color);
+  void inversePrimaryColorChanged(Color color) =>
+      setColor('inversePrimary', color);
+  void onSurfaceColorChanged(Color color) => setColor('onSurface', color);
+  void surfaceContainerHighestColorChanged(Color color) =>
+      setColor('surfaceContainerHighest', color);
+  void onSurfaceVariantColorChanged(Color color) =>
+      setColor('onSurfaceVariant', color);
+  void inverseSurfaceColorChanged(Color color) =>
+      setColor('inverseSurface', color);
+  void onInverseSurfaceColorChanged(Color color) =>
+      setColor('onInverseSurface', color);
 
   void appBarBackgroundColorChanged(Color color) {
     _updatePreviewThemes(
@@ -430,20 +446,131 @@ class ThemeEditorController extends ChangeNotifier {
         FontRole.body => _bodyFontFamily,
       };
 
-  void _updateColorScheme(ColorScheme Function(ColorScheme scheme) update) {
-    _updatePreviewThemes(
-      (brightness, theme) => theme.copyWith(
-        colorScheme: update(theme.colorScheme).copyWith(brightness: brightness),
-      ),
-    );
-    notifyListeners();
+  Color colorForField(String field) {
+    final activeTheme = previewTheme;
+    return _colorMap[field] ?? switch (field) {
+      'seed' => activeTheme.primaryColor,
+      'primary' => activeTheme.colorScheme.primary,
+      'onPrimary' => activeTheme.colorScheme.onPrimary,
+      'primaryContainer' => activeTheme.colorScheme.primaryContainer,
+      'onPrimaryContainer' => activeTheme.colorScheme.onPrimaryContainer,
+      'secondary' => activeTheme.colorScheme.secondary,
+      'onSecondary' => activeTheme.colorScheme.onSecondary,
+      'secondaryContainer' => activeTheme.colorScheme.secondaryContainer,
+      'onSecondaryContainer' => activeTheme.colorScheme.onSecondaryContainer,
+      'tertiary' => activeTheme.colorScheme.tertiary,
+      'onTertiary' => activeTheme.colorScheme.onTertiary,
+      'tertiaryContainer' => activeTheme.colorScheme.tertiaryContainer,
+      'onTertiaryContainer' => activeTheme.colorScheme.onTertiaryContainer,
+      'error' => activeTheme.colorScheme.error,
+      'onError' => activeTheme.colorScheme.onError,
+      'errorContainer' => activeTheme.colorScheme.errorContainer,
+      'onErrorContainer' => activeTheme.colorScheme.onErrorContainer,
+      'surface' => activeTheme.colorScheme.surface,
+      'onSurface' => activeTheme.colorScheme.onSurface,
+      'surfaceContainerHighest' =>
+        activeTheme.colorScheme.surfaceContainerHighest,
+      'onSurfaceVariant' => activeTheme.colorScheme.onSurfaceVariant,
+      'outline' => activeTheme.colorScheme.outline,
+      'outlineVariant' => activeTheme.colorScheme.outlineVariant,
+      'inverseSurface' => activeTheme.colorScheme.inverseSurface,
+      'onInverseSurface' => activeTheme.colorScheme.onInverseSurface,
+      'inversePrimary' => activeTheme.colorScheme.inversePrimary,
+      'surfaceTint' => activeTheme.colorScheme.surfaceTint,
+      'scrim' => activeTheme.colorScheme.scrim,
+      _ => activeTheme.colorScheme.primary,
+    };
   }
+
+  // void _updateColorScheme(ColorScheme Function(ColorScheme scheme) update) {
+  //   _updatePreviewThemes(
+  //     (brightness, theme) => theme.copyWith(
+  //       colorScheme: update(theme.colorScheme).copyWith(brightness: brightness),
+  //     ),
+  //   );
+  //   notifyListeners();
+  // }
 
   String? _normalizeFontFamily(String? family) {
     if (family == null || family.trim().isEmpty || family == 'Default') {
       return null;
     }
     return family;
+  }
+
+  ThemeData _applyColorField(
+    ThemeData theme, {
+    required Brightness brightness,
+    required String field,
+    required Color color,
+  }) {
+    final swatch = UtilService.getColorSwatch(color);
+    final scheme = theme.colorScheme;
+    final nextScheme = switch (field) {
+      'primary' => scheme.copyWith(primary: color, brightness: brightness),
+      'onPrimary' => scheme.copyWith(onPrimary: color, brightness: brightness),
+      'primaryContainer' =>
+        scheme.copyWith(primaryContainer: color, brightness: brightness),
+      'onPrimaryContainer' =>
+        scheme.copyWith(onPrimaryContainer: color, brightness: brightness),
+      'secondary' => scheme.copyWith(secondary: color, brightness: brightness),
+      'onSecondary' =>
+        scheme.copyWith(onSecondary: color, brightness: brightness),
+      'secondaryContainer' =>
+        scheme.copyWith(secondaryContainer: color, brightness: brightness),
+      'onSecondaryContainer' => scheme.copyWith(
+          onSecondaryContainer: color,
+          brightness: brightness,
+        ),
+      'tertiary' => scheme.copyWith(tertiary: color, brightness: brightness),
+      'onTertiary' =>
+        scheme.copyWith(onTertiary: color, brightness: brightness),
+      'tertiaryContainer' =>
+        scheme.copyWith(tertiaryContainer: color, brightness: brightness),
+      'onTertiaryContainer' => scheme.copyWith(
+          onTertiaryContainer: color,
+          brightness: brightness,
+        ),
+      'error' => scheme.copyWith(error: color, brightness: brightness),
+      'onError' => scheme.copyWith(onError: color, brightness: brightness),
+      'errorContainer' =>
+        scheme.copyWith(errorContainer: color, brightness: brightness),
+      'onErrorContainer' =>
+        scheme.copyWith(onErrorContainer: color, brightness: brightness),
+      'surface' => scheme.copyWith(surface: color, brightness: brightness),
+      'onSurface' => scheme.copyWith(onSurface: color, brightness: brightness),
+      'surfaceContainerHighest' => scheme.copyWith(
+          surfaceContainerHighest: color,
+          brightness: brightness,
+        ),
+      'onSurfaceVariant' =>
+        scheme.copyWith(onSurfaceVariant: color, brightness: brightness),
+      'outline' => scheme.copyWith(outline: color, brightness: brightness),
+      'outlineVariant' =>
+        scheme.copyWith(outlineVariant: color, brightness: brightness),
+      'inverseSurface' =>
+        scheme.copyWith(inverseSurface: color, brightness: brightness),
+      'onInverseSurface' =>
+        scheme.copyWith(onInverseSurface: color, brightness: brightness),
+      'inversePrimary' =>
+        scheme.copyWith(inversePrimary: color, brightness: brightness),
+      'surfaceTint' =>
+        scheme.copyWith(surfaceTint: color, brightness: brightness),
+      'scrim' => scheme.copyWith(scrim: color, brightness: brightness),
+      _ => scheme.copyWith(brightness: brightness),
+    };
+
+    return theme.copyWith(
+      brightness: brightness,
+      colorScheme: nextScheme,
+      primaryColor: field == 'primary' ? color : theme.primaryColor,
+      primaryColorLight:
+          field == 'primary' ? swatch[100] : theme.primaryColorLight,
+      primaryColorDark:
+          field == 'primary' ? swatch[700] : theme.primaryColorDark,
+      secondaryHeaderColor:
+          field == 'primary' ? swatch[50] : theme.secondaryHeaderColor,
+    );
   }
 
   ThemeData _buildPreviewTheme() {
@@ -532,6 +659,12 @@ class ThemeEditorController extends ChangeNotifier {
       floatingActionButtonTheme: source.floatingActionButtonTheme,
       bottomNavigationBarTheme: source.bottomNavigationBarTheme,
     );
+  }
+
+  void _syncColorMapFromTheme() {
+    for (final field in editableColorFields) {
+      _colorMap[field] = colorForField(field);
+    }
   }
 
   // void _setPreviewThemeFor(Brightness brightness, ThemeData theme) {

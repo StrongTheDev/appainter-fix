@@ -68,12 +68,12 @@ class _EditorPageState extends State<EditorPage>
                           tabs: const [
                             Tab(
                               child: SizedBox.expand(
-                                child: Center(child: Text('Basic')),
+                                child: Center(child: Text('Colors')),
                               ),
                             ),
                             Tab(
                               child: SizedBox.expand(
-                                child: Center(child: Text('Advanced')),
+                                child: Center(child: Text('Typography')),
                               ),
                             ),
                           ],

@@ -1,4 +1,3 @@
-import 'package:appainter/components/shared/color_picker_tile.dart';
 import 'package:appainter/components/shared/font_family_dropdown.dart';
 import 'package:appainter/models/text_variant.dart';
 import 'package:appainter/providers/app_provider.dart';
@@ -11,7 +10,6 @@ class AdvancedThemePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppProvider>();
-    final theme = app.previewTheme;
     final families = app.availableFontFamilies;
 
     return Card(
@@ -19,88 +17,39 @@ class AdvancedThemePanel extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'Advanced Controls',
+            'Typography',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            'Refine the preview surfaces one by one. These edits stay inside the device preview.',
+            'Choose the two broad font roles first, then fine-tune individual text styles.',
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 16),
           _AdvancedSection(
-            title: 'App bar',
-            child: ColorPickerTile(
-              label: 'Background',
-              color: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
-              colorKey: const Key('advanced_app_bar_background_picker'),
-              onColorChanged: app.appBarBackgroundColorChanged,
-            ),
-          ),
-          _AdvancedSection(
-            title: 'Buttons',
+            title: 'Font Roles',
             child: Column(
               children: [
-                ColorPickerTile(
-                  label: 'Filled button background',
-                  color: theme.filledButtonTheme.style?.backgroundColor
-                          ?.resolve(<WidgetState>{}) ??
-                      theme.colorScheme.primary,
-                  colorKey: const Key('advanced_filled_button_picker'),
-                  onColorChanged: app.filledButtonBackgroundColorChanged,
+                FontFamilyDropdown(
+                  label: 'Display, headings & titles',
+                  value: app.displayFontFamily,
+                  options: families,
+                  dropdownKey: const Key('basic_display_font_dropdown'),
+                  onChanged: app.setDisplayFontFamily,
                 ),
-                ColorPickerTile(
-                  label: 'Outlined and text button color',
-                  color: theme.outlinedButtonTheme.style?.foregroundColor
-                          ?.resolve(<WidgetState>{}) ??
-                      theme.colorScheme.primary,
-                  colorKey: const Key('advanced_outlined_button_picker'),
-                  onColorChanged: app.outlinedButtonColorChanged,
+                const SizedBox(height: 12),
+                FontFamilyDropdown(
+                  label: 'Body & labels',
+                  value: app.bodyFontFamily,
+                  options: families,
+                  dropdownKey: const Key('basic_body_font_dropdown'),
+                  onChanged: app.setBodyFontFamily,
                 ),
               ],
             ),
           ),
           _AdvancedSection(
-            title: 'Inputs',
-            child: ColorPickerTile(
-              label: 'Field fill color',
-              color: theme.inputDecorationTheme.fillColor ??
-                  theme.colorScheme.surfaceContainerHighest,
-              colorKey: const Key('advanced_input_fill_picker'),
-              onColorChanged: app.inputFillColorChanged,
-            ),
-          ),
-          _AdvancedSection(
-            title: 'Tabs',
-            child: ColorPickerTile(
-              label: 'Indicator and label color',
-              color: theme.tabBarTheme.indicatorColor ?? theme.colorScheme.primary,
-              colorKey: const Key('advanced_tab_indicator_picker'),
-              onColorChanged: app.tabIndicatorColorChanged,
-            ),
-          ),
-          _AdvancedSection(
-            title: 'Floating action button',
-            child: ColorPickerTile(
-              label: 'FAB background',
-              color: theme.floatingActionButtonTheme.backgroundColor ??
-                  theme.colorScheme.primaryContainer,
-              colorKey: const Key('advanced_fab_picker'),
-              onColorChanged: app.fabBackgroundColorChanged,
-            ),
-          ),
-          _AdvancedSection(
-            title: 'Bottom navigation',
-            child: ColorPickerTile(
-              label: 'Selected item color',
-              color: theme.bottomNavigationBarTheme.selectedItemColor ??
-                  theme.colorScheme.primary,
-              colorKey: const Key('advanced_bottom_nav_picker'),
-              onColorChanged: app.bottomNavigationColorChanged,
-            ),
-          ),
-          _AdvancedSection(
-            title: 'Typography',
+            title: 'Fine Tune Styles',
             child: Column(
               children: [
                 ...TextVariant.values.map(
@@ -114,9 +63,7 @@ class AdvancedThemePanel extends StatelessWidget {
                             label: variant.label,
                             value: app.fontForVariant(variant),
                             options: families,
-                            dropdownKey: Key(
-                              'advanced_font_${variant.name}',
-                            ),
+                            dropdownKey: Key('advanced_font_${variant.name}'),
                             hintText: variant.role == FontRole.display
                                 ? 'Falls back to ${app.displayFontFamily ?? 'Default display font'}'
                                 : 'Falls back to ${app.bodyFontFamily ?? 'Default body font'}',

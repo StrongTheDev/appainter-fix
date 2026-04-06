@@ -194,7 +194,11 @@ class ThemeEditorController extends ChangeNotifier {
 
   void setUseMaterial3(bool useMaterial3) {
     _updatePreviewThemes(
-      (brightness, theme) => theme.copyWith(useMaterial3: useMaterial3),
+      (brightness, theme) => _rebuildPreviewBaseTheme(
+        theme,
+        brightness: brightness,
+        useMaterial3: useMaterial3,
+      ),
     );
     notifyListeners();
   }
@@ -485,17 +489,48 @@ class ThemeEditorController extends ChangeNotifier {
     final seedColor = source.primaryColor != Colors.transparent
         ? source.primaryColor
         : source.colorScheme.primary;
-    final derivedScheme = ColorScheme.fromSeed(
+    return _rebuildPreviewBaseTheme(
+      source,
+      brightness: brightness,
       seedColor: seedColor,
+    );
+  }
+
+  ThemeData _rebuildPreviewBaseTheme(
+    ThemeData source, {
+    required Brightness brightness,
+    bool? useMaterial3,
+    Color? seedColor,
+  }) {
+    final resolvedUseMaterial3 = useMaterial3 ?? source.useMaterial3;
+    final resolvedSeedColor = seedColor ??
+        (source.primaryColor != Colors.transparent
+            ? source.primaryColor
+            : source.colorScheme.primary);
+    final derivedScheme = ColorScheme.fromSeed(
+      seedColor: resolvedSeedColor,
       brightness: brightness,
     );
-    return source.copyWith(
-      brightness: brightness,
+    final rebuilt = ThemeData.from(
       colorScheme: derivedScheme,
-      primaryColor: seedColor,
-      primaryColorLight: UtilService.getColorSwatch(seedColor)[100],
-      primaryColorDark: UtilService.getColorSwatch(seedColor)[700],
-      secondaryHeaderColor: UtilService.getColorSwatch(seedColor)[50],
+      useMaterial3: resolvedUseMaterial3,
+    );
+
+    return rebuilt.copyWith(
+      brightness: brightness,
+      primaryColor: resolvedSeedColor,
+      primaryColorLight: UtilService.getColorSwatch(resolvedSeedColor)[100],
+      primaryColorDark: UtilService.getColorSwatch(resolvedSeedColor)[700],
+      secondaryHeaderColor: UtilService.getColorSwatch(resolvedSeedColor)[50],
+      appBarTheme: source.appBarTheme,
+      filledButtonTheme: source.filledButtonTheme,
+      elevatedButtonTheme: source.elevatedButtonTheme,
+      outlinedButtonTheme: source.outlinedButtonTheme,
+      textButtonTheme: source.textButtonTheme,
+      inputDecorationTheme: source.inputDecorationTheme,
+      tabBarTheme: source.tabBarTheme,
+      floatingActionButtonTheme: source.floatingActionButtonTheme,
+      bottomNavigationBarTheme: source.bottomNavigationBarTheme,
     );
   }
 
